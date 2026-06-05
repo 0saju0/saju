@@ -291,6 +291,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
         <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="setGender('남')">남성</div><div class="seg-opt" onclick="setGender('여')">여성</div></div></div>
       </div>
       <div class="field"><label class="field-label">역법</label><div class="tabs"><div class="tab on" id="tab-y" onclick="setCal('양')">양력</div><div class="tab" id="tab-e" onclick="setCal('음')">음력</div></div></div>
+      <div class="field"><label class="field-label">현재 연애 상태</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="rel-status-wrap">
+          <div class="seg-opt on" onclick="setRelStatus(this,'솔로')">💔 솔로</div>
+          <div class="seg-opt" onclick="setRelStatus(this,'연애중')">💗 연애중</div>
+          <div class="seg-opt" onclick="setRelStatus(this,'결혼함')">💍 결혼함</div>
+          <div class="seg-opt" onclick="setRelStatus(this,'이별·이혼 후')">🌙 이별·이혼 후</div>
+        </div>
+      </div>
       <div class="field-row">
         <div class="field"><label class="field-label">출생연도</label><input class="input" id="i-year" type="number" placeholder="1993" min="1920" max="2012" oninput="render()"></div>
         <div class="field"><label class="field-label">출생월</label><select class="input" id="i-month" onchange="render()"><option value="">월</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
@@ -535,9 +543,10 @@ const CHEONEUL={甲:'丑未',戊:'丑未',庚:'丑未',乙:'子申',己:'子申'
 function samhapKey(z){for(const k in SAMHAP){if(k.includes(z))return k;}return null;}
 
 let LUNAR_OK=false;
-let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애'};
+let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애',relStatus:'솔로'};
 
 function startReading(type){state.readingType=type;goTo('pg1');}
+function setRelStatus(el,s){state.relStatus=s;document.querySelectorAll('#rel-status-wrap .seg-opt').forEach(e=>e.classList.toggle('on',e===el));}
 function setGender(g){state.gender=g;document.querySelectorAll('#pg1 .seg-opt').forEach(e=>e.classList.toggle('on',e.textContent===g+'성'));render();}
 function setCal(c){state.cal=c;document.getElementById('tab-y').classList.toggle('on',c==='양');document.getElementById('tab-e').classList.toggle('on',c==='음');render();}
 
@@ -616,7 +625,7 @@ async function showResult(){
   document.getElementById('r-badge').textContent=state.pkg.name+(state.readingType==='종합'?' 종합 사주':' 연애·결혼 사주');
   document.getElementById('r-name').textContent=state.name+'님의 사주';
   const tl=s.hasTime?'':' · 時 미상';
-  document.getElementById('r-info').textContent=`${state.year}.${String(state.month).padStart(2,'0')}.${String(state.day).padStart(2,'0')} (${state.cal}력) · ${state.gender}성${tl}`;
+  document.getElementById('r-info').textContent=`${state.year}.${String(state.month).padStart(2,'0')}.${String(state.day).padStart(2,'0')} (${state.cal}력) · ${state.gender}성${tl} · ${state.relStatus||''}`.trim().replace(/·\s*$/,'');
   document.getElementById('r-pillars').innerHTML=s.P.map((p,i)=>pillarHTML(p,i===2)).join('');
   document.getElementById('r-sinsal').innerHTML=sinsalHTML(s.sinsal);
   const dm=DM_DESC[s.dayGan]||['일간','—'];
@@ -645,7 +654,8 @@ function buildContext(s){
 async function runAI(s){
   const ctx=buildContext(s);const nm=state.name;
   const persp=state.readingType==='종합'?'인생 전반(성격·직업·재물·건강·운세) 관점':'연애·결혼 관점';
-  const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.
+  const relNote=state.relStatus?`\n[현재 연애 상태] ${state.relStatus} — 이 상태에 맞는 현실적 조언을 포함할 것.`:'';
+  const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.${relNote}
 
 ${ctx}
 
@@ -657,46 +667,50 @@ ${ctx}
 - 분량은 충분히. 700자 이상. 3~4문단.
 - HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.`;
 
-  const loveSecs=[
-    {icon:'💗',title:'나의 연애 DNA — 사랑하는 방식',ask:'연애 초반·중반·권태기 각각의 행동 패턴과 심리를 일간과 신살로. 실제 일상 장면 3~4개 포함. 최소 700자, 3문단 이상.'},
-    {icon:'✨',title:'타고난 매력 자본',ask:'타인에게 주는 첫인상, 말투, SNS 스타일, 모임에서의 존재감을 오행·십성으로. 최소 700자, 3문단 이상.'},
-    {icon:'🔥',title:"본능적으로 끌리는 '치명적 인연'",ask:'본능적으로 끌리는 상대의 외모·말투·분위기·직업 유형, 첫 만남 장면, 빠졌을 때의 심리와 위험, 자기 점검법. 최소 700자, 3문단 이상.'},
-    {icon:'🤍',title:"실제 안정을 줄 '진짜 배우자상'",ask:'실질적으로 잘 맞는 배우자의 성향·직업·생활 패턴·갈등 대처법. 첫 데이트에서 알아보는 구체적 신호 3가지. 최소 700자, 3문단 이상.'},
-    {icon:'🌀',title:'연애에서 반복되는 약점과 탈출법',ask:'반복되는 연애 실수 패턴을 구체적 장면 2~3개로 진단. 그 뿌리가 되는 사주 기운. 깨는 실생활 행동 처방 3가지. 최소 700자, 3문단 이상.'},
-    {icon:'⏰',title:'결혼 골든타임',ask:'향후 세운·대운 기반 결혼·인연 좋은 시기 TOP3를 <table>(컬럼: 순위/시기 년·월/세운간지와 일주관계/만나는 인연 특징)로. 표 아래 각 순위를 2문단씩 상세 해설. 실제 세운 간지 반드시 인용. 총 최소 900자.'},
-    {icon:'🌙',title:'한 줄의 운명적 조언',ask:'핵심 조언을 <div class="quote">한 줄</div>로 먼저. 그 아래 사주 근거와 따뜻한 당부를 4문단으로. 최소 900자.'},
+  // ━━ CHAPTER 1: 나의 타고난 결혼운
+  const ch1=[
+    {icon:'💗',title:'나의 연애 성향과 사랑하는 방식',ask:`일간 ${s.dayGan}으로 본 ${nm}님의 타고난 연애 성향. 주는 사랑 vs 받는 사랑 중 어느 쪽인지, 연애 초반·중반·권태기 각각의 행동 패턴을 실제 일상 장면 3개로. 배우자궁(일지)이 의미하는 이상형의 기본 성향도 포함. 최소 700자, 3문단.`},
+    {icon:'✨',title:'타고난 매력 자본 — 결혼이 득인가 족쇄인가',ask:`${nm}님이 이성에게 주는 첫인상과 선천적 매력을 오행·십성·신살로. 결혼하는 게 득이 되는 사주인지 족쇄가 되기 쉬운 사주인지 사주 근거로 솔직하게. 최소 700자, 3문단.`},
+    {icon:'🧿',title:'사주 속 이혼수와 개운법',ask:`${nm}님 사주에 갈등·이별·이혼 위험이 드러나는 지점을 십성·신살로 구체적 장면과 함께 진단. 그 기운을 다스리는 현대적 개운법 3가지를 번호 문단으로. 최소 700자, 3문단.`},
   ];
-  const lovePremium=[
-    {icon:'⚖️',title:'결혼, 해야 할까 말아야 할까',ask:'<table>(컬럼: 항목/결혼이 확장이 되는 이유/결혼이 구속이 될 수 있는 이유) 심리적 안정·경제적 변화·관계·자아실현 4행. 표 아래 결론 4문단. 총 최소 900자.'},
-    {icon:'💞',title:"연애 상대 알아보는 '실전 체크리스트'",ask:'좋은 인연인지 첫 만남~3개월 안에 확인할 체크포인트 5가지. 각 항목마다 사주 근거 + 구체적 판단 기준 + 실생활 예시. 최소 700자.'},
-    {icon:'🗺️',title:'대운 전환기와 인연 리스크',ask:'현재 대운과 다음 대운 전환기 연도, 그 사이 연애·결혼에 생길 변화와 리스크를 실제 대운 간지·연도로. 전환기에 흔들리는 심리 묘사와 안전하게 넘기는 법. 최소 700자, 3문단.'},
+  // ━━ CHAPTER 2: 배우자상
+  const ch2=[
+    {icon:'🤍',title:'나와 평생을 보내게 될 그 사람 — 첫인상과 분위기',ask:`${nm}님과 잘 맞는 배우자의 첫 만남에서 느껴지는 분위기, 외모적 특징, 말투와 가치관, 함께 있을 때의 온도를 일지와 용신으로 구체적으로. 실제 첫 데이트 장면 묘사 포함. 최소 700자, 3문단.`},
+    {icon:'💼',title:'배우자의 성격·자산·직업',ask:`${nm}님에게 잘 맞는 배우자의 성격과 가치관(경제 관념·신념·상대 대하는 태도), 어울리는 직종과 경제적 능력을 오행·십성으로. 첫 데이트에서 그 사람을 알아보는 신호 3가지. 최소 700자, 3문단.`},
+    {icon:'⚡',title:'절대 피해야 할 악연',ask:`${nm}님의 운을 깎아먹는 이성의 특징, 나를 편안하게 하는 사람 vs 불안하게 하는 사람의 차이, 나만 애쓰는 관계인지 함께 성장하는 관계인지 구별하는 법. 최소 700자, 3문단.`},
   ];
-  const loveVip=[
-    {icon:'📅',title:'나이대별 결혼 시나리오 (지금 vs 2년 후 vs 5년 후)',ask:'<table>(컬럼: 시나리오/예상 결혼 시기/그때의 대운·세운 환경/예상 배우자상) A·B·C안 비교. 실제 대운·세운 간지 인용. 표 아래 어느 시점이 유리한지 4문단 결론. 총 최소 900자.'},
-    {icon:'🧿',title:"사주 속 이혼수와 '액땜' 비법",ask:'갈등·이별 위험이 드러나는 지점을 신살·십성으로 구체적 장면과 함께. 현대적 액땜 솔루션 3가지를 번호 문단으로 상세히. 최소 700자, 3문단.'},
-    {icon:'👶',title:'자녀운과 결혼 후 가정의 미래',ask:'자녀운, 결혼 후 가정 분위기, 배우자와의 역할 균형과 갈등 패턴. 최소 900자, 3문단.'},
-    {icon:'♾️',title:'평생 인연 대운 흐름',ask:'인생 전체 대운에서 연애·결혼운이 어떻게 흐르는지. 인연이 강해지는 대운과 약해지는 대운을 실제 간지·나이로. 최소 700자, 3문단.'},
+  // ━━ CHAPTER 3: 결혼 타이밍
+  const ch3=[
+    {icon:'⏰',title:'놓치면 땅을 치고 후회할 결혼 골든타임',ask:`향후 세운·대운으로 결혼운이 최고로 올라가는 시기 TOP3를 <table>(컬럼: 순위/시기 년·월/세운 간지와 일주 관계/그때 만나는 인연 특징)로. 실제 간지 인용 필수. 표 아래 각 순위 2문단씩 해설. 총 최소 900자.`},
+    {icon:'⚠️',title:'성급하면 망하는 시기 / 늦으면 고립되는 시기',ask:`${nm}님 사주에서 결혼을 서두르면 실패하는 위험 시기와, 너무 미루면 고립되는 시기를 대운·세운으로 구체적 연도와 함께. 프러포즈·혼인 신고에 적합한 가장 좋은 타이밍도. 최소 700자, 3문단.`},
   ];
+  // ━━ CHAPTER 4: 결혼 후 미래
+  const ch4=[
+    {icon:'💰',title:'결혼 후 재물운과 관계운',ask:`결혼 이후 ${nm}님의 재물운 변화, 배우자와의 경제 관계, 가정 내 역할 균형을 사주로. 결혼 후 삶이 어떻게 달라지는지 구체적 장면으로. 최소 700자, 3문단.`},
+    {icon:'👶',title:'자녀운 — 자녀의 수, 임신 좋은 시기, 자녀와의 관계',ask:`${nm}님의 식상(食傷)과 자녀궁으로 본 자녀운: 자녀가 몇 명쯤 인연이 닿을지, 임신하기 좋은 대운·세운 시기, 나와 자녀의 관계는 어떤 색깔인지. 최소 700자, 3문단.`},
+    {icon:'🌈',title:'결혼 후 인생 그래프와 행복한 삶을 위하여',ask:`결혼 후 ${nm}님의 인생이 어떻게 펼쳐지는지 대운 흐름으로. 행복한 결혼 생활을 위한 핵심 조언을 <div class="quote">한 줄</div>로 먼저, 그 아래 구체적 당부 3문단. 최소 700자.`},
+  ];
+  const closing={icon:'🌙',title:'한 줄의 운명적 조언',ask:`${nm}님 사주 전체를 관통하는 핵심 조언을 <div class="quote">한 줄</div>로 먼저. 그 아래 사주 근거와 따뜻한 당부를 4문단으로. 최소 700자.`};
   const generalSecs=[
-    {icon:'☯',title:'사주 총론 — 타고난 그릇',ask:'일간과 전체 사주 구성으로 타고난 기질, 인생의 큰 방향, 강점과 과제를 총평. 최소 700자, 3문단.'},
-    {icon:'🎭',title:'성격과 본성',ask:'겉성격과 속마음의 차이, 장점과 단점을 일간·오행으로. 일상 장면 3~4개 포함. 최소 700자, 3문단.'},
-    {icon:'💼',title:'직업과 적성',ask:'잘 맞는 직업군·진로 방향, 일하는 스타일, 피해야 할 업종을 십성·오행으로. 구체적 직종 예시 포함. 최소 700자, 3문단.'},
-    {icon:'💰',title:'재물운',ask:'평생 재물의 흐름, 돈 버는 방식, 재물이 들어오는 시기와 조심할 시기를 재성·대운으로. 최소 700자, 3문단.'},
-    {icon:'🌿',title:'건강운',ask:'타고난 체질, 약한 부위, 평생 관리할 건강 포인트를 오행 균형으로. 구체적 관리법 포함. 최소 900자, 3문단.'},
-    {icon:'🤝',title:'대인관계와 인복',ask:'사람 사귀는 스타일, 귀인 유형, 조심할 인연을 구체적 장면으로. 최소 700자, 3문단.'},
-    {icon:'🌟',title:'2025~2026년 운세',ask:'올해·내년 세운·대운 흐름, 좋은 시기와 조심할 시기를 실제 간지·월로. 각 년도를 2문단씩 분석. 최소 900자.'},
-    {icon:'🕯️',title:'인생 종합 조언',ask:'핵심 조언을 <div class="quote">한 줄</div>로 먼저. 사주 근거와 따뜻한 당부 4문단. 최소 900자.'},
+    {icon:'☯',title:'사주 총론 — 타고난 그릇',ask:`일간과 전체 사주 구성으로 타고난 기질, 인생의 큰 방향, 강점과 과제. 최소 700자, 3문단.`},
+    {icon:'🎭',title:'성격과 본성',ask:`겉성격과 속마음의 차이, 장단점을 일간·오행으로. 일상 장면 3개 포함. 최소 700자, 3문단.`},
+    {icon:'💼',title:'직업과 적성',ask:`잘 맞는 직업군·진로 방향, 일하는 스타일, 피해야 할 업종. 구체적 직종 예시 포함. 최소 700자, 3문단.`},
+    {icon:'💰',title:'재물운',ask:`평생 재물의 흐름, 돈 버는 방식, 재물이 들어오는 시기와 조심할 시기. 최소 700자, 3문단.`},
+    {icon:'🌿',title:'건강운',ask:`타고난 체질, 약한 부위, 평생 관리할 건강 포인트와 구체적 관리법. 최소 600자, 2문단.`},
+    {icon:'🤝',title:'대인관계와 인복',ask:`사람 사귀는 스타일, 귀인 유형, 조심할 인연을 구체적 장면으로. 최소 700자, 3문단.`},
+    {icon:'🌟',title:'2025~2026년 운세',ask:`올해·내년 세운·대운 흐름, 좋은 시기와 조심할 시기를 실제 간지·월로. 각 년도 2문단씩. 최소 900자.`},
+    {icon:'🕯️',title:'인생 종합 조언',ask:`핵심 조언을 <div class="quote">한 줄</div>로. 사주 근거와 따뜻한 당부 4문단. 최소 700자.`},
   ];
 
   let secs;
   if(state.readingType==='종합'){
     secs=generalSecs.slice();
-    if(state.pkg.name==='프리미엄')secs=[...generalSecs,loveSecs[0],loveSecs[3]];
-    if(state.pkg.name==='VIP')secs=[...generalSecs,loveSecs[0],loveSecs[3],loveSecs[5],loveVip[3]];
+    if(state.pkg.name==='프리미엄')secs=[...generalSecs,...ch1.slice(0,2)];
+    if(state.pkg.name==='VIP')secs=[...generalSecs,...ch1,...ch3];
   }else{
-    secs=loveSecs.slice();
-    if(state.pkg.name==='프리미엄')secs=[...loveSecs.slice(0,6),...lovePremium,loveSecs[6]];
-    if(state.pkg.name==='VIP')secs=[...loveSecs.slice(0,6),...lovePremium,...loveVip,loveSecs[6]];
+    if(state.pkg.name==='기본') secs=[...ch1,...ch3.slice(0,1),closing];
+    else if(state.pkg.name==='프리미엄') secs=[...ch1,...ch2,...ch3,closing];
+    else secs=[...ch1,...ch2,...ch3,...ch4,closing];
   }
 
   const body=document.getElementById('ai-body');body.innerHTML='';
@@ -710,8 +724,9 @@ ${ctx}
   }
 
   // 모든 섹션 플레이스홀더 먼저 추가
-  const blocks=secs.map(sec=>{
+  const blocks=secs.map((sec,i)=>{
     const div=document.createElement('div');
+    div.id='sec-block-'+i;
     div.innerHTML=`<h3>${sec.icon} ${sec.title}</h3><p class="sec-load" style="color:var(--cream3);opacity:.5;animation:pulse 1.2s infinite">월하 선생이 풀이 중입니다…</p>`;
     body.appendChild(div);
     return div;
@@ -996,19 +1011,17 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 // 실패한 섹션 개별 재시도
 async function retrySection(btn,icon,title,idx){
-  const block=btn.closest('div[class]')||btn.parentElement.parentElement;
+  const block=document.getElementById('sec-block-'+idx);
+  if(!block)return;
   btn.textContent='불러오는 중…';btn.disabled=true;
-  // 현재 runAI context 재활용
   const s=state.saju;if(!s)return;
   const ctx=buildContext(s);const nm=state.name;
   const persp=state.readingType==='종합'?'인생 전반(성격·직업·재물·건강·운세) 관점':'연애·결혼 관점';
-  const prompt=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.\n\n${ctx}\n\n[규칙]\n- "${nm}님"이라고 부를 것\n- 실제 사주 글자를 콕 집어 근거로 인용\n- 전문용어는 괄호로 쉽게 설명\n- 일상의 구체적 장면으로 묘사\n- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.\n\n[이번 항목] ${title}\n최소 700자, 3문단 이상으로 자세히.`;
+  const relNote=state.relStatus?` 현재 연애 상태: ${state.relStatus}.`:'';
+  const prompt=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.${relNote}\n\n${ctx}\n\n[규칙]\n- "${nm}님"이라고 부를 것\n- 실제 사주 글자를 콕 집어 근거로 인용\n- 전문용어는 괄호로 쉽게 설명\n- 일상의 구체적 장면으로 묘사\n- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.\n\n[이번 항목] ${title}\n최소 700자, 3문단 이상.`;
   const txt=await fetchAI(prompt,2);
-  if(txt){
-    block.innerHTML=`<h3>${icon} ${title}</h3>${txt}`;
-  }else{
-    btn.textContent='🔄 다시 불러오기';btn.disabled=false;
-  }
+  if(txt){block.innerHTML=`<h3>${icon} ${title}</h3>${txt}`;}
+  else{btn.textContent='🔄 다시 불러오기';btn.disabled=false;}
 }
 
 window.addEventListener('load',()=>{
