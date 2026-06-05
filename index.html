@@ -883,7 +883,16 @@ async function fetchAI(prompt,retries){
       const data=await res.json();
       if(data&&data.error){AI_LAST_ERR=data.error;await sleep(800);continue;}
       const t=(data&&data.text)?data.text:'';
-      if(t&&t.trim()){AI_LAST_ERR='';return t.replace(/```html|```/g,'').trim();}
+      if(t&&t.trim()){
+        AI_LAST_ERR='';
+        // 마크다운 → HTML 변환
+        const html=t
+          .replace(/```html|```/g,'')
+          .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g,'<em>$1</em>')
+          .trim();
+        return html;
+      }
       AI_LAST_ERR='empty response';await sleep(800);
     }catch(e){AI_LAST_ERR='fetch failed: '+(e.message||e);await sleep(800);}
   }
