@@ -339,6 +339,15 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
         </select></div>
       </div>
       <div class="manse" id="manse"><div class="manse-title">나의 사주팔자 萬歲曆</div><div class="pillars" id="pillars"></div><div class="sinsal-row" id="sinsal"></div></div>
+
+      <!-- 나만의 질문 -->
+      <div class="field" style="margin-top:4px">
+        <label class="field-label">나만의 질문 <span style="color:var(--cream3);font-weight:300">(선택 · 최대 3개)</span></label>
+        <div style="font-size:11px;color:var(--cream3);margin-bottom:10px;line-height:1.6">궁금한 것을 직접 적으면 사주로 답해드려요</div>
+        <input class="input" id="q1" placeholder="예) 올해 이직해도 될까요?" style="margin-bottom:8px">
+        <input class="input" id="q2" placeholder="예) 지금 만나는 사람이 운명의 상대일까요?" style="margin-bottom:8px">
+        <input class="input" id="q3" placeholder="예) 언제쯤 결혼할 수 있을까요?">
+      </div>
       <div class="warn" id="warn1"></div>
       <button class="btn" onclick="toStep2()">패키지 선택 →</button>
     </div>
@@ -571,7 +580,7 @@ const CHEONEUL={甲:'丑未',戊:'丑未',庚:'丑未',乙:'子申',己:'子申'
 function samhapKey(z){for(const k in SAMHAP){if(k.includes(z))return k;}return null;}
 
 let LUNAR_OK=false;
-let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애',relStatus:'솔로',daewoonBase:'음'};
+let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애',relStatus:'솔로',daewoonBase:'음',questions:[]};
 
 function startReading(type){state.readingType=type;goTo('pg1');}
 function setRelStatus(el,s){state.relStatus=s;document.querySelectorAll('#rel-status-wrap .seg-opt').forEach(e=>e.classList.toggle('on',e===el));}
@@ -684,6 +693,12 @@ async function showResult(){
   document.getElementById('r-dm').textContent=s.dayGan;
   document.getElementById('r-dm').className='dm-char '+EL_CLS[GAN_EL[s.dayGan]];
   document.getElementById('r-dm-t').textContent=dm[0];document.getElementById('r-dm-d').textContent=dm[1];
+  // 질문 수집
+  state.questions=[
+    document.getElementById('q1')?.value.trim(),
+    document.getElementById('q2')?.value.trim(),
+    document.getElementById('q3')?.value.trim(),
+  ].filter(q=>q);
   // AI 풀이는 백그라운드에서 섹션별로 채워짐
   runAI(s);
 }
@@ -776,6 +791,16 @@ ${ctx}
   }
 
   const body=document.getElementById('ai-body');body.innerHTML='';
+
+  // 나만의 질문 섹션 추가 (있을 때만)
+  if(state.questions&&state.questions.length>0){
+    const qList=state.questions.map((q,i)=>`Q${i+1}. ${q}`).join('\n');
+    secs=[...secs,{
+      icon:'❓',
+      title:'나의 질문에 대한 답변',
+      ask:`${nm}님이 직접 질문했습니다. 아래 질문들에 사주 데이터를 근거로 하나씩 정성껏 답해주세요.\n\n${qList}\n\n각 질문마다 <h4>Q. 질문내용</h4> 형식으로 제목 달고, 답변은 사주 근거와 함께 구체적으로. 전체 최소 700자.`
+    }];
+  }
 
   // 로그인 안내 배너
   if(gUser){
