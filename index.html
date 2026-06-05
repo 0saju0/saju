@@ -709,7 +709,14 @@ function buildContext(s){
   const sinsalStr=Object.keys(s.sinsal).length?Object.entries(s.sinsal).map(([k,v])=>`${k}살(${v.map(x=>x.lbl.replace(/ .*/,'')).join('·')})`).join(', '):'없음';
   const dwStr=s.daewoon.length?s.daewoon.map(d=>`${d.age}세~ ${d.gz}(${GAN_KR[d.gz[0]]}${ZHI_KR[d.gz[1]]})`).join(', '):'정보 없음';
   const swStr=s.saewoon.map(w=>`${w.year} ${w.gz}(${GAN_KR[w.gz[0]]}${ZHI_KR[w.gz[1]]})`).join(', ');
+  // 현재 연도와 실제 만 나이 계산
+  const now=new Date();
+  const currentYear=now.getFullYear();
+  const currentMonth=now.getMonth()+1;
+  let age=currentYear-state.year;
+  if(state.month&&currentMonth<state.month)age--; // 생일 안 지났으면 -1
   return `[상담자] ${state.name}, ${state.gender}성, ${state.year}년 ${state.month}월 ${state.day}일생(${state.cal}력)${s.hasTime?'':' (출생시 미상)'}
+[현재 시점] ${currentYear}년 ${currentMonth}월 / 상담자 현재 만 ${age}세
 [사주팔자]\n${pdesc}
 [일간] ${s.dayGan}(${GAN_KR[s.dayGan]}) — ${DM_DESC[s.dayGan][0]}
 [오행 분포] ${oc}
@@ -881,47 +888,74 @@ async function fetchAI(prompt,retries){
   return '';
 }
 
-/* ════ 저장 / 다시보기 ════ */
+/* ════ 저장 / 다시보기 (Supabase) ════ */
 function saveResult(){
   if(!gUser){alert('구글 로그인 후 저장할 수 있어요.');return;}
   autoSave();
-  document.getElementById('save-btn').textContent='✅ 저장 완료! (내 풀이에서 확인)';
-  document.getElementById('save-btn').onclick=()=>goTo('pgMy');
 }
-function autoSave(){
+async function autoSave(){
   if(!gUser||!lastResultHTML)return;
-  const key='saju_'+gUser.sub;
-  let saved=[];
-  try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
-  // 같은 날 같은 이름이면 중복 저장 방지
-  const today=new Date().toLocaleDateString('ko-KR');
-  const isDup=saved.length&&saved[0].name===lastResultMeta.name&&saved[0].date===today;
-  if(!isDup){
+  try{
+    const res=await fetch('/api/supabase',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'save',sub:gUser.sub,data:{...lastResultMeta,html:lastResultHTML}})});
+    const data=await res.json();
+    if(data.ok)showToast('💾 내 풀이 보관함에 저장되었습니다!');
+  }catch(e){
+    // 저장 실패 시 localStorage fallback
+    const key='saju_'+gUser.sub;
+    let saved=[];try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
     saved.unshift({...lastResultMeta,html:lastResultHTML,id:Date.now()});
-    if(saved.length>20)saved=saved.slice(0,20);
-    localStorage.setItem(key,JSON.stringify(saved));
+    localStorage.setItem(key,JSON.stringify(saved.slice(0,20)));
+    showToast('💾 풀이가 저장되었습니다!');
   }
 }
-function loadMyList(){
-  if(!gUser){document.getElementById('my-not-logged').style.display='block';document.getElementById('my-list-wrap').style.display='none';return;}
+async function loadMyList(){
+  if(!gUser){
+    document.getElementById('my-not-logged').style.display='block';
+    document.getElementById('my-list-wrap').style.display='none';
+    return;
+  }
   document.getElementById('my-not-logged').style.display='none';
   document.getElementById('my-list-wrap').style.display='block';
-  const key='saju_'+gUser.sub;
-  let saved=[];
-  try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
   const list=document.getElementById('my-list');
-  if(!saved.length){list.innerHTML='<div style="text-align:center;padding:32px;color:var(--cream3)">저장된 풀이가 없어요.<br>사주를 보고 저장해보세요!</div>';return;}
-  list.innerHTML=saved.map((r,i)=>`<div class="my-item" onclick="viewSaved(${i})"><div class="my-item-top"><span class="my-item-name">${esc(r.name)}님의 사주</span><span class="my-item-date">${esc(r.date)}</span></div><div class="my-item-type">${esc(r.type==='종합'?'🌙 종합 사주':'💗 연애·결혼 사주')} · ${esc(r.pkg||'')}</div></div>`).join('');
+  list.innerHTML='<div style="text-align:center;padding:24px;color:var(--cream3);font-size:13px">불러오는 중…</div>';
+  try{
+    const res=await fetch('/api/supabase',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'load',sub:gUser.sub})});
+    const data=await res.json();
+    const readings=data.readings||[];
+    if(!readings.length){
+      list.innerHTML='<div style="text-align:center;padding:32px;color:var(--cream3)">저장된 풀이가 없어요.<br>사주를 보고 저장해보세요!</div>';
+      return;
+    }
+    list.innerHTML=readings.map(r=>`
+      <div class="my-item" onclick="viewSaved('${r.id}')">
+        <div class="my-item-top">
+          <span class="my-item-name">${esc(r.name||'')}님의 사주</span>
+          <span class="my-item-date">${esc((r.created_at||'').slice(0,10))}</span>
+        </div>
+        <div class="my-item-type">${r.reading_type==='종합'?'🌙 종합 사주':'💗 연애·결혼 사주'} · ${esc(r.pkg||'')}</div>
+      </div>`).join('');
+  }catch(e){
+    list.innerHTML='<div style="text-align:center;padding:24px;color:#e08080;font-size:13px">불러오기 실패. 인터넷 연결을 확인해주세요.</div>';
+  }
 }
-function viewSaved(idx){
-  const key='saju_'+gUser.sub;
-  let saved=[];try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
-  const r=saved[idx];if(!r)return;
-  document.getElementById('saved-badge').textContent=(r.type==='종합'?'종합 사주':'연애·결혼 사주');
-  document.getElementById('saved-name').textContent=r.name+'님의 사주';
-  document.getElementById('saved-info').textContent=r.info||r.date;
-  document.getElementById('saved-body').innerHTML=r.html||'내용이 없습니다.';
+async function viewSaved(id){
+  document.getElementById('saved-body').innerHTML='<div style="text-align:center;padding:30px;color:var(--cream3)">불러오는 중…</div>';
   goTo('pgSaved');
+  try{
+    const res=await fetch('/api/supabase',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'view',sub:gUser.sub,id})});
+    const data=await res.json();
+    const r=data.reading;
+    if(!r){document.getElementById('saved-body').innerHTML='<p style="color:#e08080">풀이를 찾을 수 없습니다.</p>';return;}
+    document.getElementById('saved-badge').textContent=(r.reading_type==='종합'?'종합 사주':'연애·결혼 사주');
+    document.getElementById('saved-name').textContent=(r.name||'')+'님의 사주';
+    document.getElementById('saved-info').textContent=r.info||r.created_at?.slice(0,10)||'';
+    document.getElementById('saved-body').innerHTML=r.html||'내용이 없습니다.';
+  }catch(e){
+    document.getElementById('saved-body').innerHTML='<p style="color:#e08080">불러오기 실패했습니다.</p>';
+  }
 }
 
 /* ════ 궁합 ════ */
