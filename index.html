@@ -701,6 +701,14 @@ ${ctx}
 
   const body=document.getElementById('ai-body');body.innerHTML='';
 
+  // 로그인 안내 배너
+  if(gUser){
+    const banner=document.createElement('div');
+    banner.style.cssText='background:rgba(200,164,90,.07);border:1px solid var(--border);border-radius:3px;padding:11px 16px;margin-bottom:18px;font-size:12px;color:var(--gold);display:flex;align-items:center;gap:8px';
+    banner.innerHTML='💾 로그인 상태입니다. 풀이가 완료되면 <strong>자동으로 저장</strong>됩니다.';
+    body.appendChild(banner);
+  }
+
   // 모든 섹션 플레이스홀더 먼저 추가
   const blocks=secs.map(sec=>{
     const div=document.createElement('div');
@@ -714,28 +722,40 @@ ${ctx}
   outro.textContent='― 月下 月下緣 ―';
   body.appendChild(outro);
 
-  // 모든 섹션 동시 요청 — 완성되는 순서대로 바로 표시
-  await Promise.all(secs.map(async(sec,i)=>{
-    await sleep(i*80);
-    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,3);
-    if(txt){
-      blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt}`;
-    }else{
-      // 실패 시 다시 불러오기 버튼 표시
-      blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>
-        <div style="text-align:center;padding:18px 0">
-          <p style="color:var(--cream3);font-size:13px;margin-bottom:14px">이 항목을 불러오지 못했어요.</p>
-          <button onclick="retrySection(this,'${sec.icon}','${sec.title.replace(/'/g,"\\'")}',${i})" 
-            style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:10px 20px;border-radius:3px;cursor:pointer;font-size:13px">
-            🔄 다시 불러오기
-          </button>
-        </div>`;
-    }
-    if(i===0) document.getElementById('save-btn').style.display=gUser?'flex':'none';
-  }));
+  // 3개씩 묶어서 처리 (rate limit 방지)
+  const BATCH=3;
+  for(let b=0;b<secs.length;b+=BATCH){
+    const batch=secs.slice(b,b+BATCH);
+    await Promise.all(batch.map(async(sec,j)=>{
+      const i=b+j;
+      await sleep(j*200);
+      const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,2);
+      if(txt){
+        blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt}`;
+      }else{
+        blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>
+          <div style="text-align:center;padding:16px 0">
+            <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
+            <button onclick="retrySection(this,'${sec.icon}','${sec.title.replace(/'/g,"\\'")}',${i})"
+              style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:3px;cursor:pointer;font-size:13px">
+              🔄 다시 불러오기
+            </button>
+          </div>`;
+      }
+    }));
+  }
 
+  // 완료 후 자동 저장 (로그인 상태면)
   lastResultHTML=body.innerHTML;
   lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
+  if(gUser){
+    autoSave();
+    document.getElementById('save-btn').style.display='none'; // 자동저장이니 버튼 숨김
+  }else{
+    document.getElementById('save-btn').style.display='flex'; // 비로그인: 수동 저장
+    document.getElementById('save-btn').innerHTML='💾 이 풀이 저장하기 (로그인 필요)';
+    document.getElementById('save-btn').onclick=()=>{alert('저장하려면 우측 상단에서 로그인해주세요.');};
+  }
 }
 
 function fallback(sec,s){
@@ -762,14 +782,23 @@ async function fetchAI(prompt,retries){
 /* ════ 저장 / 다시보기 ════ */
 function saveResult(){
   if(!gUser){alert('구글 로그인 후 저장할 수 있어요.');return;}
+  autoSave();
+  document.getElementById('save-btn').textContent='✅ 저장 완료! (내 풀이에서 확인)';
+  document.getElementById('save-btn').onclick=()=>goTo('pgMy');
+}
+function autoSave(){
+  if(!gUser||!lastResultHTML)return;
   const key='saju_'+gUser.sub;
   let saved=[];
   try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
-  saved.unshift({...lastResultMeta,html:lastResultHTML,id:Date.now()});
-  if(saved.length>20)saved=saved.slice(0,20);
-  localStorage.setItem(key,JSON.stringify(saved));
-  document.getElementById('save-btn').textContent='✅ 저장 완료! (내 풀이에서 확인)';
-  document.getElementById('save-btn').onclick=()=>goTo('pgMy');
+  // 같은 날 같은 이름이면 중복 저장 방지
+  const today=new Date().toLocaleDateString('ko-KR');
+  const isDup=saved.length&&saved[0].name===lastResultMeta.name&&saved[0].date===today;
+  if(!isDup){
+    saved.unshift({...lastResultMeta,html:lastResultHTML,id:Date.now()});
+    if(saved.length>20)saved=saved.slice(0,20);
+    localStorage.setItem(key,JSON.stringify(saved));
+  }
 }
 function loadMyList(){
   if(!gUser){document.getElementById('my-not-logged').style.display='block';document.getElementById('my-list-wrap').style.display='none';return;}
