@@ -465,7 +465,7 @@ function showAuthWarn(msg){
   if(w){w.textContent='✦ '+msg;w.style.display='block';}
 }
 async function initAuth(){
-  if(!sb){renderAuthBar();return;}
+  if(!sb){renderAuthBar();console.warn('Supabase 설정 필요: SUPABASE_URL / SUPABASE_ANON_KEY를 입력하세요.');return;}
   const {data} = await sb.auth.getUser();
   currentUser = data.user || null;
   renderAuthBar();
@@ -478,7 +478,7 @@ function renderAuthBar(){
   const box=document.getElementById('auth-actions');
   if(!box)return;
   if(!sb){
-    box.innerHTML='<button class="auth-mini-btn gold" onclick="goTo(\\'pgAuth\\')">로그인 설정 필요</button>';
+    box.innerHTML=`<button class="auth-mini-btn gold" onclick="goTo('pgAuth')">로그인 설정 필요</button>`;
     return;
   }
   if(currentUser){
@@ -486,7 +486,7 @@ function renderAuthBar(){
       <button class="auth-mini-btn gold" onclick="openMyPage()">마이페이지</button>
       <button class="auth-mini-btn" onclick="logout()">로그아웃</button>`;
   }else{
-    box.innerHTML='<button class="auth-mini-btn gold" onclick="goTo(\\'pgAuth\\')">로그인</button>';
+    box.innerHTML=`<button class="auth-mini-btn gold" onclick="goTo('pgAuth')">로그인</button>`;
   }
 }
 async function loginWithGoogle(){
