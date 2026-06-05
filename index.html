@@ -281,6 +281,16 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
     <button class="btn-ghost" style="width:100%;padding:16px" onclick="startReading('종합')">🌙 종합 사주 보기 (성격·직업·재물·운세) →</button>
     <button class="btn-ghost" style="width:100%;padding:16px" onclick="goTo('pgG')">💞 두 사람 궁합 보기 →</button>
   </div>
+  <div style="padding:24px 0 44px;text-align:center;border-top:1px solid var(--border2)">
+    <div style="font-size:11px;color:rgba(240,232,216,.25);letter-spacing:.5px;line-height:2.2">
+      月下緣 · 월하연<br>
+      상호: 히얼나우(Here now, hear now) &nbsp;|&nbsp; 대표자: 김희진<br>
+      사업자등록번호: 670-05-03155 &nbsp;|&nbsp; 통신판매업 신고번호: 2025-서울마포-1576<br>
+      사업장 주소: 서울특별시 마포구 독막로28길 10, 109동 B101층 528호<br>
+      문의: 010-2177-7332<br>
+      © 2026 Wolhayeon. All rights reserved.
+    </div>
+  </div>
 </div></div>
 
 <!-- STEP 1 -->
@@ -1016,13 +1026,21 @@ function triggerGLogin(){
   if(typeof google==='undefined'){
     alert('Google 로그인 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;
   }
+  // 로그인 전에 현재 풀이를 sessionStorage에 임시 저장 (페이지 이동 대비)
+  const aiBody=document.getElementById('ai-body');
+  if(aiBody&&aiBody.innerHTML.trim()){
+    sessionStorage.setItem('saju_temp_html',aiBody.innerHTML);
+    sessionStorage.setItem('saju_temp_meta',JSON.stringify({
+      name:state.name,type:state.readingType,pkg:state.pkg.name,
+      date:new Date().toLocaleDateString('ko-KR'),
+      info:document.getElementById('r-info')?.textContent||''
+    }));
+  }
   try{
     google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});
     google.accounts.id.prompt((notification)=>{
       if(notification.isNotDisplayed()||notification.isSkippedMoment()){
-        // 팝업 차단 시 버튼 방식으로 fallback
         document.getElementById('g-btn-wrap').style.display='block';
-        document.getElementById('g_id_signin_btn').style.display='none';
         google.accounts.id.renderButton(document.getElementById('g-btn-wrap'),{theme:'outline',size:'large',text:'signin_with',shape:'pill',width:200});
       }
     });
@@ -1036,12 +1054,29 @@ function onGoogleLogin(response){
   document.getElementById('g-user-nm').textContent=payload.name.split(' ')[0]+'님';
   const pic=document.getElementById('g-user-pic');
   pic.src=payload.picture;pic.onerror=()=>{pic.src='';};
-  // 로그인 시 이미 완료된 풀이가 있으면 자동 저장
+
+  // sessionStorage에서 임시 저장된 풀이 복원 (페이지가 이동됐을 때)
+  const tempHtml=sessionStorage.getItem('saju_temp_html');
+  const tempMeta=sessionStorage.getItem('saju_temp_meta');
+  if(tempHtml&&tempMeta){
+    try{
+      lastResultHTML=tempHtml;
+      lastResultMeta=JSON.parse(tempMeta);
+      const aiBody=document.getElementById('ai-body');
+      if(aiBody)aiBody.innerHTML=tempHtml;
+      document.getElementById('result').style.display='block';
+      document.getElementById('loading').style.display='none';
+      goTo('pg4');
+      sessionStorage.removeItem('saju_temp_html');
+      sessionStorage.removeItem('saju_temp_meta');
+    }catch(e){}
+  }
+
+  // 풀이가 있으면 자동 저장
   if(lastResultHTML){
     autoSave();
     const sb=document.getElementById('save-btn');
-    if(sb){sb.style.display='none';}
-    // 저장 완료 토스트 표시
+    if(sb)sb.style.display='none';
     showToast('💾 풀이가 자동 저장되었습니다!');
   }
 }
