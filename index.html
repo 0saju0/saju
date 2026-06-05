@@ -274,6 +274,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 
   <div style="padding-bottom:48px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:rgba(200,164,90,.07);border:1px solid var(--border2);border-radius:3px;padding:11px 16px;font-size:12px;color:var(--cream3);text-align:center;line-height:1.7">
+      🔐 <strong style="color:var(--gold)">구글 로그인</strong>하면 풀이가 자동 저장되어<br>언제든 <strong style="color:var(--gold)">내 풀이 보관함</strong>에서 다시 볼 수 있어요
+    </div>
     <button class="btn" onclick="startReading('연애')">💗 연애·결혼 사주 보기 →</button>
     <button class="btn-ghost" style="width:100%;padding:16px" onclick="startReading('종합')">🌙 종합 사주 보기 (성격·직업·재물·운세) →</button>
     <button class="btn-ghost" style="width:100%;padding:16px" onclick="goTo('pgG')">💞 두 사람 궁합 보기 →</button>
@@ -994,7 +997,14 @@ function onGoogleLogin(response){
   document.getElementById('g-user-nm').textContent=payload.name.split(' ')[0]+'님';
   const pic=document.getElementById('g-user-pic');
   pic.src=payload.picture;pic.onerror=()=>{pic.src='';};
-  const sb=document.getElementById('save-btn');if(sb&&document.getElementById('result').style.display!=='none')sb.style.display='flex';
+  // 로그인 시 이미 완료된 풀이가 있으면 자동 저장
+  if(lastResultHTML){
+    autoSave();
+    const sb=document.getElementById('save-btn');
+    if(sb){sb.style.display='none';}
+    // 저장 완료 토스트 표시
+    showToast('💾 풀이가 자동 저장되었습니다!');
+  }
 }
 function parseJwt(token){
   try{
@@ -1016,6 +1026,12 @@ function goTo(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='pgMy')loadMyList();
+}
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(200,164,90,.95);color:#1a1228;padding:12px 22px;border-radius:4px;font-size:13px;font-weight:500;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.3);letter-spacing:.5px;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
