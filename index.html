@@ -3,6 +3,962 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>월하연(月下緣) — AI 사주</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0712;--deep:#0f0a1a;--panel:#140e22;--panel2:#1a1228;
+  --gold:#c8a45a;--gold2:#e8cc84;--gold-dim:rgba(200,164,90,.14);
+  --rose:#b04668;--rose2:#d06888;--rose-dim:rgba(176,70,104,.12);
+  --cream:#f0e8d8;--cream2:#d4c4b0;--cream3:#9a8a9e;
+  --border:rgba(200,164,90,.18);--border2:rgba(200,164,90,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--cream);font-family:'Noto Sans KR',sans-serif;font-weight:300;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--ink)}::-webkit-scrollbar-thumb{background:var(--gold-dim)}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.022;pointer-events:none}
+.bg-light{position:fixed;pointer-events:none;border-radius:50%;filter:blur(120px);z-index:0}
+.bg-light.l1{width:600px;height:600px;background:rgba(176,70,104,.08);top:-10%;left:-15%}
+.bg-light.l2{width:500px;height:500px;background:rgba(200,164,90,.05);bottom:10%;right:-15%}
+.bg-light.l3{width:340px;height:340px;background:rgba(107,53,168,.06);top:45%;left:35%}
+#root{position:relative;z-index:1}
+.container{max-width:720px;margin:0 auto;padding:0 22px}
+
+/* 상단 로그인 바 */
+.top-bar{position:sticky;top:0;z-index:20;background:rgba(10,7,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border2);padding:10px 22px;display:flex;align-items:center;justify-content:space-between}
+.top-logo{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold);letter-spacing:2px}
+.top-right{display:flex;align-items:center;gap:10px}
+.top-user{display:flex;align-items:center;gap:8px;cursor:pointer}
+.top-user img{width:28px;height:28px;border-radius:50%;border:1px solid var(--border)}
+.top-user-name{font-size:12px;color:var(--cream3)}
+.top-btn{font-size:11px;border:1px solid var(--border);color:var(--gold);padding:5px 13px;border-radius:2px;cursor:pointer;background:none;letter-spacing:1px;font-family:'Noto Sans KR',sans-serif}
+.top-btn:hover{background:var(--gold-dim)}
+.top-mypage{font-size:11px;color:var(--cream3);cursor:pointer;padding:5px 10px}
+.top-mypage:hover{color:var(--cream)}
+
+/* 히어로 */
+.hero{text-align:center;padding:52px 0 40px;border-bottom:1px solid var(--border2)}
+.hero-moon{font-size:46px;margin-bottom:18px;filter:drop-shadow(0 0 24px rgba(200,164,90,.5));animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:2px;padding:6px 18px;margin-bottom:22px;font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+.hero-badge::before,.hero-badge::after{content:'❀';font-size:8px;opacity:.7}
+.hero h1{font-family:'Noto Serif KR',serif;font-size:clamp(32px,7vw,52px);font-weight:900;letter-spacing:-1px;line-height:1.12;margin-bottom:6px}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--gold),#fff0d8,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:.5em;letter-spacing:4px;display:block;margin-bottom:10px}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:var(--cream3);letter-spacing:.5px;margin:14px 0 24px;line-height:1.6}
+.hero-stats{display:flex;justify-content:center;gap:36px;margin-top:24px}
+.stat{text-align:center}.stat-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--gold)}
+.stat-label{font-size:11px;color:var(--cream3);letter-spacing:1px;margin-top:2px}
+.stat-div{width:1px;background:var(--border);align-self:stretch}
+
+.master{padding:36px 0;border-bottom:1px solid var(--border2);display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.master-pic{width:88px;height:88px;border-radius:50%;border:1px solid var(--border);background:linear-gradient(135deg,#1a1228,#2a1832);display:flex;align-items:center;justify-content:center;font-size:38px;flex-shrink:0;box-shadow:0 0 36px rgba(176,70,104,.18)}
+.master-name{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:700;margin-bottom:3px}
+.master-title{font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:10px}
+.master-desc{font-size:13px;color:var(--cream3);line-height:1.9}
+
+.section{padding:40px 0}
+.section-title{font-family:'Noto Serif KR',serif;font-size:12px;font-weight:500;color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:14px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+
+.reviews{display:grid;gap:12px}
+.review{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:16px 18px}
+.review-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.review-stars{color:var(--gold);font-size:12px;letter-spacing:2px}
+.review-name{font-size:12px;color:var(--cream3)}
+.review-date{font-size:11px;color:rgba(240,232,216,.2);margin-left:auto}
+.review-text{font-size:13px;color:var(--cream3);line-height:1.8}
+
+.card{background:var(--panel);border:1px solid var(--border2);border-radius:4px;overflow:hidden}
+.card-head{padding:20px 24px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.card-head-title{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:600}
+.card-head-step{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--cream3);letter-spacing:1px}
+.card-body{padding:24px}
+
+.field{margin-bottom:18px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px}
+.field-label{font-size:11px;color:var(--cream3);letter-spacing:2px;margin-bottom:7px;display:block}
+.input{width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(240,232,216,.1);border-radius:3px;padding:12px 13px;color:var(--cream);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:300;outline:none;transition:border-color .25s,box-shadow .25s;appearance:none;-webkit-appearance:none}
+.input:focus{border-color:rgba(200,164,90,.4);box-shadow:0 0 0 3px rgba(200,164,90,.05)}
+.input option{background:#1a1228}
+.input::placeholder{color:rgba(240,232,216,.2)}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg-opt{padding:12px;border:1px solid rgba(240,232,216,.1);border-radius:3px;text-align:center;font-size:13px;color:var(--cream3);cursor:pointer;transition:all .25s}
+.seg-opt:hover{border-color:var(--border);color:var(--cream)}
+.seg-opt.on{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+.tabs{display:flex;border:1px solid rgba(240,232,216,.1);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.tab{flex:1;padding:10px;text-align:center;font-size:12px;cursor:pointer;transition:all .2s;color:var(--cream3);letter-spacing:1px}
+.tab.on{background:var(--gold-dim);color:var(--gold)}
+
+.manse{background:rgba(0,0,0,.28);border:1px solid var(--border2);border-radius:3px;padding:18px;margin:18px 0;display:none}
+.manse.show{display:block;animation:fade .4s}
+.manse-title{font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:13px;display:flex;align-items:center;gap:10px}
+.manse-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.pillar{text-align:center;padding:12px 5px;border:1px solid rgba(200,164,90,.1);border-radius:3px;background:rgba(200,164,90,.03)}
+.pillar.day{border-color:rgba(176,70,104,.4);background:rgba(176,70,104,.06)}
+.pillar-lbl{font-size:9px;color:var(--cream3);letter-spacing:1px;margin-bottom:6px}
+.pillar-ss{font-size:8px;color:var(--gold);margin-bottom:3px;min-height:10px}
+.pillar-gan{font-family:'Noto Serif KR',serif;font-size:24px;line-height:1}
+.pillar-zhi{font-family:'Noto Serif KR',serif;font-size:24px;line-height:1;margin-top:1px}
+.pillar-han{font-size:8px;color:var(--cream3);margin-top:5px}
+.w{color:#6db56d}.f{color:#e07070}.t{color:#d2a85a}.m{color:#b8c4d0}.s{color:#6da0e0}
+.sinsal-row{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.sinsal-tag{font-size:10px;border:1px solid rgba(176,70,104,.35);color:var(--rose2);border-radius:2px;padding:3px 9px;background:var(--rose-dim)}
+
+.pkgs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.pkg{border:1px solid rgba(240,232,216,.08);border-radius:4px;padding:18px 12px;cursor:pointer;transition:all .3s;background:var(--panel);position:relative;overflow:hidden;text-align:center}
+.pkg::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .3s}
+.pkg:hover{border-color:rgba(200,164,90,.2)}
+.pkg.on{border-color:rgba(200,164,90,.35);background:rgba(200,164,90,.04)}
+.pkg.on::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pkg-badge{position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:1px;padding:3px 7px;border-radius:1px;background:var(--rose);color:#fff}
+.pkg-icon{font-size:20px;margin-bottom:9px}
+.pkg-name{font-family:'Noto Serif KR',serif;font-size:13px;font-weight:600;margin-bottom:8px}
+.pkg-items{text-align:left;font-size:11px;color:var(--cream3);line-height:1.9;margin-bottom:13px}
+.pkg-items li{list-style:none;padding-left:11px;position:relative}
+.pkg-items li::before{content:'❀';position:absolute;left:0;color:var(--gold);font-size:7px;top:4px}
+.pkg-items strong{color:var(--gold2);font-weight:500}
+.pkg-price{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--gold)}
+.pkg-price span{font-size:12px;color:var(--cream3)}
+
+.pays{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pay{border:1px solid rgba(240,232,216,.08);border-radius:3px;padding:13px 15px;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:11px;background:var(--panel)}
+.pay:hover{border-color:rgba(200,164,90,.2)}
+.pay.on{border-color:rgba(200,164,90,.35);background:rgba(200,164,90,.04)}
+.pay-logo{width:36px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.pay-name{font-size:13px;color:var(--cream2)}
+
+.order{border:1px solid var(--border2);border-radius:3px;overflow:hidden;margin-bottom:18px}
+.order-row{display:flex;justify-content:space-between;align-items:center;padding:13px 17px;border-bottom:1px solid var(--border2);font-size:13px}
+.order-row:last-child{border-bottom:none}
+.order-row.total{background:rgba(200,164,90,.04)}
+.order-lbl{color:var(--cream3)}.order-val{color:var(--cream2)}
+.order-total-val{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--gold)}
+
+.btn{width:100%;padding:16px;border:none;border-radius:3px;background:linear-gradient(135deg,var(--rose),var(--rose2),var(--rose));background-size:200% 100%;color:#fff;font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .4s;animation:shim 4s ease-in-out infinite}
+@keyframes shim{0%,100%{background-position:0%}50%{background-position:100%}}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(176,70,104,.4)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-ghost{background:none;border:1px solid rgba(240,232,216,.1);border-radius:3px;padding:13px 20px;color:var(--cream3);font-size:13px;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif}
+.btn-ghost:hover{border-color:var(--border);color:var(--cream)}
+.btn-rowx{display:flex;gap:10px;margin-top:16px}
+.btn-rowx .btn{flex:1}
+.warn{display:none;color:#e08080;font-size:12px;text-align:center;margin-bottom:12px;letter-spacing:1px}
+
+/* 결과 */
+.res-hero{text-align:center;padding:28px 0 22px;border-bottom:1px solid var(--border2);margin-bottom:24px}
+.res-name{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;margin:16px 0 5px}
+.res-info{font-size:13px;color:var(--cream3);letter-spacing:1px}
+.dm-box{background:rgba(176,70,104,.06);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.dm-char{font-family:'Noto Serif KR',serif;font-size:40px;font-weight:900;color:var(--gold);line-height:1;flex-shrink:0}
+.dm-info h3{font-family:'Noto Serif KR',serif;font-size:14px;margin-bottom:3px}
+.dm-info p{font-size:12px;color:var(--cream3);line-height:1.8}
+.ai-box{background:var(--panel);border:1px solid var(--border2);border-radius:4px;overflow:hidden}
+.ai-head{padding:15px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--rose2);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-head-t{font-size:12px;color:var(--gold);letter-spacing:2px}
+.ai-body{padding:22px;font-size:14px;color:var(--cream2);line-height:1.95}
+.ai-body h3{font-family:'Noto Serif KR',serif;font-size:15px;color:var(--cream);margin:24px 0 11px;padding-bottom:9px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.ai-body h3:first-child{margin-top:0}
+.ai-body h4{font-family:'Noto Serif KR',serif;font-size:13px;color:var(--gold2);margin:16px 0 7px;font-weight:600}
+.ai-body p{margin-bottom:12px}
+.ai-body strong{color:var(--gold2);font-weight:500}
+.ai-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.ai-body th{background:rgba(200,164,90,.08);color:var(--gold);padding:9px 7px;text-align:left;font-weight:500;border-bottom:1px solid var(--border)}
+.ai-body td{padding:9px 7px;border-bottom:1px solid var(--border2);color:var(--cream2);vertical-align:top;line-height:1.7}
+.ai-body .quote{background:rgba(176,70,104,.08);border-left:2px solid var(--rose2);padding:14px 16px;margin:14px 0;font-family:'Noto Serif KR',serif;font-size:14px;color:var(--cream);font-style:italic;line-height:1.8;border-radius:0 3px 3px 0}
+
+/* 저장 버튼 */
+.save-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:rgba(200,164,90,.08);border:1px solid var(--border);border-radius:3px;color:var(--gold2);font-size:13px;cursor:pointer;margin-top:18px;transition:all .2s}
+.save-btn:hover{background:rgba(200,164,90,.14)}
+
+/* 마이페이지 */
+.my-list{display:grid;gap:12px}
+.my-item{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:16px 18px;cursor:pointer;transition:all .2s}
+.my-item:hover{border-color:var(--border);background:rgba(200,164,90,.04)}
+.my-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.my-item-name{font-family:'Noto Serif KR',serif;font-size:15px;font-weight:600}
+.my-item-date{font-size:11px;color:var(--cream3)}
+.my-item-type{font-size:11px;color:var(--gold);letter-spacing:1px}
+
+.loading{text-align:center;padding:64px 20px}
+.l-orb{width:80px;height:80px;margin:0 auto 22px;position:relative}
+.l-orb::before,.l-orb::after{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(200,164,90,.22)}
+.l-orb::before{animation:spin 3s linear infinite}
+.l-orb::after{animation:spin 2s linear infinite reverse;border-color:rgba(176,70,104,.35)}
+.l-inner{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle,rgba(176,70,104,.18),transparent);animation:pulse 2s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.l-text{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--cream3);letter-spacing:3px;animation:pulse 1.5s ease-in-out infinite}
+.l-prog{margin-top:8px;font-size:11px;color:var(--gold);letter-spacing:2px}
+
+.page{display:none;animation:fade .4s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 구글 로그인 버튼 커스텀 */
+.g-login-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin:10px 0 4px}
+.g-login-hint{font-size:11px;color:var(--cream3);letter-spacing:1px}
+
+/* 모달 */
+.modal-bg{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:24px;max-width:420px;width:100%}
+.modal-title{font-family:'Noto Serif KR',serif;font-size:17px;color:var(--cream);margin-bottom:18px}
+
+@media(max-width:520px){
+  .master{grid-template-columns:1fr;text-align:center}.master-pic{margin:0 auto}
+  .pkgs{grid-template-columns:1fr}.pays{grid-template-columns:1fr}
+  .field-row{grid-template-columns:1fr}.hero-stats{gap:18px}
+  .card-body{padding:18px 14px}.ai-body{padding:16px 13px}
+  .ai-body table{font-size:11px}.ai-body th,.ai-body td{padding:7px 5px}
+}
+</style>
+</head>
+<body>
+<div class="bg-light l1"></div><div class="bg-light l2"></div><div class="bg-light l3"></div>
+<div id="root">
+
+<!-- 상단 로그인 바 -->
+<div class="top-bar">
+  <div class="top-logo">月下緣</div>
+  <div class="top-right" id="top-right">
+    <div id="g-signin-area">
+      <div id="g_id_onload" data-client_id="25345900699-269nfjsmcr7a22fh67f9p330uaj8nqhk.apps.googleusercontent.com" data-callback="onGoogleLogin" data-auto_prompt="false"></div>
+      <div class="g_id_signin" data-type="standard" data-size="small" data-theme="outline" data-text="sign_in_with" data-shape="pill" data-logo_alignment="left" style="display:none" id="g-btn-wrap"></div>
+      <button class="top-btn" onclick="triggerGLogin()">🔐 로그인</button>
+    </div>
+    <div id="g-user-area" style="display:none">
+      <span class="top-mypage" onclick="goTo('pgMy')">내 풀이</span>
+      <div class="top-user" onclick="showLogout()">
+        <img id="g-user-pic" src="" alt="">
+        <span class="top-user-name" id="g-user-nm"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LANDING -->
+<div class="page active" id="pg0"><div class="container">
+  <div class="hero">
+    <div class="hero-moon">🌙</div>
+    <div class="hero-badge">AI 사주 풀이</div>
+    <h1><em>月下緣 · 월하연</em>당신의 운명을<br>읽어드립니다</h1>
+    <p class="hero-sub">사주에 새겨진 나의 모든 것,<br>연애·결혼·직업·재물·운세까지</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">89,402</div><div class="stat-label">인연 분석</div></div>
+      <div class="stat-div"></div>
+      <div class="stat"><div class="stat-num">4.97</div><div class="stat-label">만족도</div></div>
+      <div class="stat-div"></div>
+      <div class="stat"><div class="stat-num">정통</div><div class="stat-label">명리 기반</div></div>
+    </div>
+  </div>
+
+  <div class="master">
+    <div class="master-pic">🌙</div>
+    <div>
+      <div class="master-name">월하 선생</div>
+      <div class="master-title">WOLHA · 사주 명리 AI</div>
+      <div class="master-desc">정확한 만세력으로 사주팔자를 계산하여, 연애·결혼·직업·재물·운세를 누구나 이해할 수 있는 말로 풀어드립니다.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">후기 <span style="color:var(--cream3);font-family:'Cormorant Garamond',serif;letter-spacing:1px;text-transform:none;font-size:13px;margin-left:auto" id="review-avg"></span></div>
+    <div class="reviews" id="reviews"></div>
+    <button class="btn-ghost" style="width:100%;margin-top:12px" onclick="openReview()">✍️ 후기 작성하기</button>
+  </div>
+
+  <div style="padding-bottom:48px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn" onclick="startReading('연애')">💗 연애·결혼 사주 보기 →</button>
+    <button class="btn-ghost" style="width:100%;padding:16px" onclick="startReading('종합')">🌙 종합 사주 보기 (성격·직업·재물·운세) →</button>
+    <button class="btn-ghost" style="width:100%;padding:16px" onclick="goTo('pgG')">💞 두 사람 궁합 보기 →</button>
+  </div>
+</div></div>
+
+<!-- STEP 1 -->
+<div class="page" id="pg1"><div class="container"><div class="section">
+  <div class="section-title">생년월일 입력</div>
+  <div class="card">
+    <div class="card-head"><div class="card-head-title" id="s1-title">기본 정보</div><div class="card-head-step">Step 1 / 3</div></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field"><label class="field-label">이름</label><input class="input" id="i-name" type="text" placeholder="홍길동" oninput="render()"></div>
+        <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="setGender('남')">남성</div><div class="seg-opt" onclick="setGender('여')">여성</div></div></div>
+      </div>
+      <div class="field"><label class="field-label">역법</label><div class="tabs"><div class="tab on" id="tab-y" onclick="setCal('양')">양력</div><div class="tab" id="tab-e" onclick="setCal('음')">음력</div></div></div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">출생연도</label><input class="input" id="i-year" type="number" placeholder="1993" min="1920" max="2012" oninput="render()"></div>
+        <div class="field"><label class="field-label">출생월</label><select class="input" id="i-month" onchange="render()"><option value="">월</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">출생일</label><input class="input" id="i-day" type="number" placeholder="15" min="1" max="31" oninput="render()"></div>
+        <div class="field"><label class="field-label">출생 시 (時)</label><select class="input" id="i-time" onchange="render()">
+          <option value="-1">모름 (時 미상)</option>
+          <option value="0">子時 23:30~01:30</option><option value="2">丑時 01:30~03:30</option><option value="4">寅時 03:30~05:30</option><option value="6">卯時 05:30~07:30</option><option value="8">辰時 07:30~09:30</option><option value="10">巳時 09:30~11:30</option><option value="12">午時 11:30~13:30</option><option value="14">未時 13:30~15:30</option><option value="16">申時 15:30~17:30</option><option value="18">酉時 17:30~19:30</option><option value="20">戌時 19:30~21:30</option><option value="22">亥時 21:30~23:30</option>
+        </select></div>
+      </div>
+      <div class="manse" id="manse"><div class="manse-title">나의 사주팔자 萬歲曆</div><div class="pillars" id="pillars"></div><div class="sinsal-row" id="sinsal"></div></div>
+      <div class="warn" id="warn1"></div>
+      <button class="btn" onclick="toStep2()">패키지 선택 →</button>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- STEP 2 -->
+<div class="page" id="pg2"><div class="container"><div class="section">
+  <div class="section-title">분석 상품</div>
+  <div class="card">
+    <div class="card-head"><div class="card-head-title" id="pkg-title">사주 풀이</div><div class="card-head-step">Step 2 / 3</div></div>
+    <div class="card-body">
+      <div class="pkgs">
+        <div class="pkg" id="pkg-0" onclick="selPkg(0,'기본',9900)">
+          <div class="pkg-icon">🌙</div><div class="pkg-name">기본</div>
+          <ul class="pkg-items"><li>핵심 성향 분석</li><li>타고난 매력</li><li>인연/직업 유형</li><li>운명적 조언</li><li><strong>7개 항목</strong></li></ul>
+          <div class="pkg-price">9,900<span>원</span></div>
+        </div>
+        <div class="pkg" id="pkg-1" onclick="selPkg(1,'프리미엄',19900)">
+          <div class="pkg-badge">인기</div><div class="pkg-icon">⭐</div><div class="pkg-name">프리미엄</div>
+          <ul class="pkg-items"><li>기본 전체 포함</li><li>결혼/직업 심층</li><li>골든타임 표</li><li>대운 분석</li><li><strong>10개 항목</strong></li></ul>
+          <div class="pkg-price">19,900<span>원</span></div>
+        </div>
+        <div class="pkg" id="pkg-2" onclick="selPkg(2,'VIP',29900)">
+          <div class="pkg-icon">💍</div><div class="pkg-name">VIP</div>
+          <ul class="pkg-items"><li>프리미엄 포함</li><li>나이대별 시나리오</li><li>이혼수·액땜</li><li>평생 대운 흐름</li><li><strong>14개 항목</strong></li></ul>
+          <div class="pkg-price">29,900<span>원</span></div>
+        </div>
+      </div>
+      <div class="btn-rowx"><button class="btn-ghost" onclick="goTo('pg1')">← 이전</button><button class="btn" id="pkg-next" disabled onclick="toStep3()">결제하기 →</button></div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- STEP 3 -->
+<div class="page" id="pg3"><div class="container"><div class="section">
+  <div class="section-title">결제</div>
+  <div class="card">
+    <div class="card-head"><div class="card-head-title">주문 확인</div><div class="card-head-step">Step 3 / 3</div></div>
+    <div class="card-body">
+      <div class="order">
+        <div class="order-row"><span class="order-lbl">상품</span><span class="order-val" id="o-name">—</span></div>
+        <div class="order-row"><span class="order-lbl">이름</span><span class="order-val" id="o-user">—</span></div>
+        <div class="order-row total"><span class="order-lbl">결제 금액</span><span class="order-total-val" id="o-price">—</span></div>
+      </div>
+      <div class="section-title" style="font-size:11px;margin-bottom:12px">결제 수단</div>
+      <div class="pays">
+        <div class="pay" onclick="selPay(this,'kakao')"><div class="pay-logo" style="background:#FEE500;color:#3C1E1E">K</div><div class="pay-name">카카오페이</div></div>
+        <div class="pay" onclick="selPay(this,'toss')"><div class="pay-logo" style="background:#0064FF;color:#fff">T</div><div class="pay-name">토스페이</div></div>
+        <div class="pay" onclick="selPay(this,'naver')"><div class="pay-logo" style="background:#03C75A;color:#fff">N</div><div class="pay-name">네이버페이</div></div>
+        <div class="pay" onclick="selPay(this,'card')"><div class="pay-logo" style="background:rgba(255,255,255,.08);color:var(--cream2);font-size:15px">💳</div><div class="pay-name">신용/체크카드</div></div>
+      </div>
+      <div style="margin-top:13px;font-size:11px;color:var(--cream3);text-align:center;letter-spacing:1px">🔐 256비트 SSL 암호화로 안전하게 결제됩니다</div>
+      <div class="btn-rowx"><button class="btn-ghost" onclick="goTo('pg2')">← 이전</button><button class="btn" id="pay-btn" disabled onclick="pay()">결제하고 사주보기</button></div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- STEP 4 결과 -->
+<div class="page" id="pg4"><div class="container">
+  <div id="loading" style="display:none"><div style="padding:70px 0"><div class="loading">
+    <div class="l-orb"><div class="l-inner">🌙</div></div>
+    <div class="l-text">사주를 풀이하고 있습니다</div>
+    <div class="l-prog" id="load-prog">· · ·</div>
+  </div></div></div>
+  <div id="result">
+    <div class="res-hero">
+      <div class="hero-badge" id="r-badge">사주 풀이</div>
+      <div class="res-name" id="r-name">—</div>
+      <div class="res-info" id="r-info">—</div>
+    </div>
+    <div class="section-title">사주팔자</div>
+    <div class="pillars" id="r-pillars" style="margin-bottom:12px"></div>
+    <div class="sinsal-row" id="r-sinsal" style="margin-bottom:22px"></div>
+    <div class="dm-box"><div class="dm-char" id="r-dm">癸</div><div class="dm-info"><h3 id="r-dm-t">—</h3><p id="r-dm-d">—</p></div></div>
+    <div class="section-title">월하 선생의 풀이</div>
+    <div class="ai-box">
+      <div class="ai-head"><div class="ai-dot"></div><div class="ai-head-t">풀이 완료</div></div>
+      <div class="ai-body" id="ai-body"></div>
+    </div>
+    <button class="save-btn" id="save-btn" onclick="saveResult()" style="display:none">💾 이 풀이 저장하기 (다시 보기용)</button>
+    <div style="padding:34px 0;text-align:center"><button class="btn" onclick="goTo('pg0')" style="max-width:260px;margin:0 auto;display:block">다시 보기</button></div>
+  </div>
+</div></div>
+
+<!-- 궁합 입력 -->
+<div class="page" id="pgG"><div class="container"><div class="section">
+  <div class="section-title">궁합 — 두 사람 정보</div>
+  <div class="card">
+    <div class="card-head"><div class="card-head-title">두 사람의 사주</div><div class="card-head-step">궁합</div></div>
+    <div class="card-body">
+      <div style="font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:13px">👤 첫 번째 사람</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">이름</label><input class="input" id="gA-name" placeholder="나"></div>
+        <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="gSetGender('A','남')">남</div><div class="seg-opt" onclick="gSetGender('A','여')">여</div></div></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">연도</label><input class="input" id="gA-year" type="number" placeholder="1993" min="1920" max="2012"></div>
+        <div class="field"><label class="field-label">월</label><select class="input" id="gA-month"><option value="">월</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">일</label><input class="input" id="gA-day" type="number" placeholder="15" min="1" max="31"></div>
+        <div class="field"><label class="field-label">역법</label><select class="input" id="gA-cal"><option value="양">양력</option><option value="음">음력</option></select></div>
+      </div>
+      <div style="height:1px;background:var(--border2);margin:6px 0 20px"></div>
+      <div style="font-size:12px;color:var(--rose2);letter-spacing:2px;margin-bottom:13px">💞 두 번째 사람</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">이름</label><input class="input" id="gB-name" placeholder="상대"></div>
+        <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="gSetGender('B','남')">남</div><div class="seg-opt" onclick="gSetGender('B','여')">여</div></div></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">연도</label><input class="input" id="gB-year" type="number" placeholder="1991" min="1920" max="2012"></div>
+        <div class="field"><label class="field-label">월</label><select class="input" id="gB-month"><option value="">월</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">일</label><input class="input" id="gB-day" type="number" placeholder="20" min="1" max="31"></div>
+        <div class="field"><label class="field-label">역법</label><select class="input" id="gB-cal"><option value="양">양력</option><option value="음">음력</option></select></div>
+      </div>
+      <div class="warn" id="gWarn"></div>
+      <div class="btn-rowx"><button class="btn-ghost" onclick="goTo('pg0')">← 이전</button><button class="btn" onclick="gToPay()">궁합 결제 (19,900원) →</button></div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- 궁합 결제 -->
+<div class="page" id="pgGpay"><div class="container"><div class="section">
+  <div class="section-title">궁합 결제</div>
+  <div class="card"><div class="card-body">
+    <div class="order">
+      <div class="order-row"><span class="order-lbl">상품</span><span class="order-val">두 사람 궁합 분석</span></div>
+      <div class="order-row"><span class="order-lbl">대상</span><span class="order-val" id="gPayWho">—</span></div>
+      <div class="order-row total"><span class="order-lbl">결제 금액</span><span class="order-total-val">19,900원</span></div>
+    </div>
+    <div class="pays">
+      <div class="pay" onclick="gSelPay(this,'kakao')"><div class="pay-logo" style="background:#FEE500;color:#3C1E1E">K</div><div class="pay-name">카카오페이</div></div>
+      <div class="pay" onclick="gSelPay(this,'toss')"><div class="pay-logo" style="background:#0064FF;color:#fff">T</div><div class="pay-name">토스페이</div></div>
+      <div class="pay" onclick="gSelPay(this,'naver')"><div class="pay-logo" style="background:#03C75A;color:#fff">N</div><div class="pay-name">네이버페이</div></div>
+      <div class="pay" onclick="gSelPay(this,'card')"><div class="pay-logo" style="background:rgba(255,255,255,.08);color:var(--cream2);font-size:15px">💳</div><div class="pay-name">카드</div></div>
+    </div>
+    <div class="btn-rowx" style="margin-top:16px"><button class="btn-ghost" onclick="goTo('pgG')">← 이전</button><button class="btn" id="gPayBtn" disabled onclick="gPay()">결제하고 궁합보기</button></div>
+  </div></div>
+</div></div></div>
+
+<!-- 궁합 결과 -->
+<div class="page" id="pgGres"><div class="container">
+  <div id="gLoading"><div style="padding:70px 0"><div class="loading"><div class="l-orb"><div class="l-inner">💞</div></div><div class="l-text">두 사람의 인연을 맞춰보는 중</div><div class="l-prog" id="gLoadProg">· · ·</div></div></div></div>
+  <div id="gResult" style="display:none">
+    <div class="res-hero"><div class="hero-badge">궁합 분석</div><div class="res-name" id="gResName">—</div><div class="res-info" id="gResInfo">—</div></div>
+    <div class="section-title">두 사람의 사주</div>
+    <div id="gPairView" style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:22px"></div>
+    <div class="section-title">월하 선생의 궁합 풀이</div>
+    <div class="ai-box"><div class="ai-head"><div class="ai-dot"></div><div class="ai-head-t">풀이 완료</div></div><div class="ai-body" id="gAiBody"></div></div>
+    <div style="padding:34px 0;text-align:center"><button class="btn" onclick="goTo('pg0')" style="max-width:260px;margin:0 auto;display:block">다시 보기</button></div>
+  </div>
+</div></div>
+
+<!-- 마이페이지 -->
+<div class="page" id="pgMy"><div class="container"><div class="section">
+  <div class="section-title">내 풀이 보관함</div>
+  <div id="my-not-logged" style="text-align:center;padding:40px 0;color:var(--cream3)">
+    <div style="font-size:36px;margin-bottom:16px">🔐</div>
+    <div style="font-size:15px;margin-bottom:6px">구글 로그인 후 이용하세요</div>
+    <div style="font-size:12px;margin-bottom:20px;color:var(--cream3)">풀이 결과를 저장하고 언제든 다시 볼 수 있어요</div>
+    <button class="btn" style="max-width:200px;margin:0 auto;display:block" onclick="triggerGLogin()">구글 로그인</button>
+  </div>
+  <div id="my-list-wrap" style="display:none">
+    <div class="my-list" id="my-list"></div>
+    <div style="margin-top:16px"><button class="btn-ghost" style="width:100%" onclick="goTo('pg0')">← 처음으로</button></div>
+  </div>
+</div></div></div>
+
+<!-- 저장된 풀이 보기 -->
+<div class="page" id="pgSaved"><div class="container">
+  <div class="res-hero">
+    <div class="hero-badge" id="saved-badge">저장된 풀이</div>
+    <div class="res-name" id="saved-name">—</div>
+    <div class="res-info" id="saved-info">—</div>
+  </div>
+  <div class="ai-box"><div class="ai-head"><div class="ai-dot"></div><div class="ai-head-t">저장된 풀이</div></div><div class="ai-body" id="saved-body"></div></div>
+  <div style="padding:28px 0;text-align:center"><button class="btn-ghost" onclick="goTo('pgMy')">← 내 풀이 목록</button></div>
+</div></div>
+
+<!-- 후기 작성 모달 -->
+<div class="modal-bg" id="review-modal">
+  <div class="modal-box">
+    <div class="modal-title">후기 작성</div>
+    <div class="field"><label class="field-label">별점</label>
+      <div id="star-pick" style="font-size:32px;letter-spacing:6px;cursor:pointer;color:var(--cream3)">
+        <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+      </div>
+    </div>
+    <div class="field"><label class="field-label">닉네임</label><input class="input" id="rv-name" placeholder="홍*동" maxlength="10"></div>
+    <div class="field"><label class="field-label">후기 내용</label><textarea class="input" id="rv-text" rows="3" placeholder="솔직한 후기를 남겨주세요" maxlength="200" style="resize:none"></textarea></div>
+    <div id="rv-warn" style="display:none;color:#e08080;font-size:12px;text-align:center;margin-bottom:10px"></div>
+    <div class="btn-rowx" style="margin-top:8px">
+      <button class="btn-ghost" onclick="closeReview()">취소</button>
+      <button class="btn" onclick="submitReview()">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- 로그아웃 모달 -->
+<div class="modal-bg" id="logout-modal">
+  <div class="modal-box" style="max-width:300px">
+    <div class="modal-title">계정</div>
+    <div style="font-size:13px;color:var(--cream3);margin-bottom:18px" id="logout-info">—</div>
+    <div class="btn-rowx">
+      <button class="btn-ghost" onclick="closeModal('logout-modal')">취소</button>
+      <button class="btn" onclick="doLogout()">로그아웃</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ════ 사주 계산 엔진 ════ */
+const GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const GAN_KR={甲:'갑',乙:'을',丙:'병',丁:'정',戊:'무',己:'기',庚:'경',辛:'신',壬:'임',癸:'계'};
+const ZHI_KR={子:'자',丑:'축',寅:'인',卯:'묘',辰:'진',巳:'사',午:'오',未:'미',申:'신',酉:'유',戌:'술',亥:'해'};
+const GAN_EL={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const ZHI_EL={子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+const EL_CLS={木:'w',火:'f',土:'t',金:'m',水:'s'};
+const EL_KR={木:'목',火:'화',土:'토',金:'금',水:'수'};
+const SS_KR={'比肩':'비견','劫財':'겁재','劫财':'겁재','食神':'식신','傷官':'상관','伤官':'상관','偏財':'편재','偏财':'편재','正財':'정재','正财':'정재','偏官':'편관','正官':'정관','偏印':'편인','正印':'정인','七殺':'편관','日主':'일간','日元':'일간','--':''};
+const DM_DESC={甲:['갑목(甲木) 일간','큰 나무처럼 곧고 강직하며 리더십과 자존심이 강합니다.'],乙:['을목(乙木) 일간','풀과 꽃처럼 유연하고 섬세하며 적응력과 친화력이 뛰어납니다.'],丙:['병화(丙火) 일간','태양처럼 밝고 정열적이며 사교적이고 표현력이 풍부합니다.'],丁:['정화(丁火) 일간','촛불처럼 따뜻하고 섬세하며 집중력과 감수성이 깊습니다.'],戊:['무토(戊土) 일간','넓은 대지처럼 듬직하고 포용력이 크며 신뢰를 줍니다.'],己:['기토(己土) 일간','기름진 밭처럼 실속 있고 꼼꼼하며 헌신적입니다.'],庚:['경금(庚金) 일간','단단한 쇠처럼 결단력 있고 의리와 추진력이 강합니다.'],辛:['신금(辛金) 일간','보석처럼 예민하고 세련되며 자존심과 미적 감각이 높습니다.'],壬:['임수(壬水) 일간','큰 바다처럼 지혜롭고 포용력이 넓으며 융통성이 있습니다.'],癸:['계수(癸水) 일간','이슬·비처럼 맑고 섬세하며 직관과 감수성이 예민합니다.']};
+const SAMHAP={'申子辰':{역마:'寅',도화:'酉',화개:'辰',장성:'子'},'寅午戌':{역마:'申',도화:'卯',화개:'戌',장성:'午'},'巳酉丑':{역마:'亥',도화:'午',화개:'丑',장성:'酉'},'亥卯未':{역마:'巳',도화:'子',화개:'未',장성:'卯'}};
+const CHEONEUL={甲:'丑未',戊:'丑未',庚:'丑未',乙:'子申',己:'子申',丙:'亥酉',丁:'亥酉',壬:'卯巳',癸:'卯巳',辛:'寅午'};
+function samhapKey(z){for(const k in SAMHAP){if(k.includes(z))return k;}return null;}
+
+let LUNAR_OK=false;
+let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애'};
+
+function startReading(type){state.readingType=type;goTo('pg1');}
+function setGender(g){state.gender=g;document.querySelectorAll('#pg1 .seg-opt').forEach(e=>e.classList.toggle('on',e.textContent===g+'성'));render();}
+function setCal(c){state.cal=c;document.getElementById('tab-y').classList.toggle('on',c==='양');document.getElementById('tab-e').classList.toggle('on',c==='음');render();}
+
+function computeSaju(){
+  const y=parseInt(document.getElementById('i-year').value);
+  const m=parseInt(document.getElementById('i-month').value);
+  const d=parseInt(document.getElementById('i-day').value);
+  const ti=parseInt(document.getElementById('i-time').value);
+  if(!(y>=1920&&y<=2012&&m>=1&&m<=12&&d>=1&&d<=31))return null;
+  state.year=y;state.month=m;state.day=d;state.timeIdx=ti;
+  if(!LUNAR_OK)return null;
+  try{
+    const hour=ti<0?12:ti;
+    let solar;
+    if(state.cal==='음'){solar=Lunar.fromYmdHms(y,m,d,hour,0,0).getSolar();}
+    else{solar=Solar.fromYmdHms(y,m,d,hour,0,0);}
+    const ec=solar.getLunar().getEightChar();
+    const hasTime=ti>=0;
+    const P=[{lbl:'연주 年',gan:ec.getYearGan(),zhi:ec.getYearZhi(),ss:ec.getYearShiShenGan()},{lbl:'월주 月',gan:ec.getMonthGan(),zhi:ec.getMonthZhi(),ss:ec.getMonthShiShenGan()},{lbl:'일주 日',gan:ec.getDayGan(),zhi:ec.getDayZhi(),ss:'日主'},{lbl:'시주 時',gan:hasTime?ec.getTimeGan():'?',zhi:hasTime?ec.getTimeZhi():'?',ss:hasTime?ec.getTimeShiShenGan():''}];
+    const dayGan=ec.getDayGan();const dayZhi=ec.getDayZhi();const yearZhi=ec.getYearZhi();
+    const oc={木:0,火:0,土:0,金:0,水:0};
+    P.forEach(p=>{if(p.gan!=='?'){oc[GAN_EL[p.gan]]++;oc[ZHI_EL[p.zhi]]++;}});
+    const allZhi=P.filter(p=>p.zhi!=='?').map(p=>({zhi:p.zhi,lbl:p.lbl}));
+    const sinsal={};
+    [dayZhi,yearZhi].forEach(ref=>{const key=samhapKey(ref);if(!key)return;const map=SAMHAP[key];for(const sn in map){const t=map[sn];allZhi.forEach(z=>{if(z.zhi===t){sinsal[sn]=sinsal[sn]||[];if(!sinsal[sn].some(x=>x.lbl===z.lbl))sinsal[sn].push(z);}});}});
+    const ce=CHEONEUL[dayGan]||'';
+    allZhi.forEach(z=>{if(ce.includes(z.zhi)){sinsal['천을귀인']=sinsal['천을귀인']||[];sinsal['천을귀인'].push(z);}});
+    let daewoon=[];
+    try{const yun=ec.getYun(state.gender==='남'?1:0);const arr=yun.getDaYun();for(let i=1;i<arr.length&&i<=9;i++){daewoon.push({age:arr[i].getStartAge(),year:arr[i].getStartYear(),gz:arr[i].getGanZhi()});}}catch(e){}
+    const nowY=new Date().getFullYear();
+    const saewoon=[];
+    for(let yy=nowY;yy<=nowY+6;yy++){const gi=(yy-4)%10,zi=(yy-4)%12;saewoon.push({year:yy,gz:GAN[(gi+10)%10]+ZHI[(zi+12)%12]});}
+    return {P,dayGan,dayZhi,oc,sinsal,daewoon,saewoon,hasTime};
+  }catch(e){return null;}
+}
+
+function pillarHTML(p,isDay){
+  if(p.gan==='?')return`<div class="pillar"><div class="pillar-lbl">${p.lbl}</div><div class="pillar-ss">時 미상</div><div class="pillar-gan" style="color:var(--cream3)">?</div><div class="pillar-zhi" style="color:var(--cream3)">?</div><div class="pillar-han">—</div></div>`;
+  const ge=GAN_EL[p.gan],ze=ZHI_EL[p.zhi];const ss=isDay?'일간(나)':(SS_KR[p.ss]||'');
+  return`<div class="pillar ${isDay?'day':''}"><div class="pillar-lbl">${p.lbl}</div><div class="pillar-ss">${ss}</div><div class="pillar-gan ${EL_CLS[ge]}">${p.gan}</div><div class="pillar-zhi ${EL_CLS[ze]}">${p.zhi}</div><div class="pillar-han">${GAN_KR[p.gan]}${ZHI_KR[p.zhi]}<br>${EL_KR[ge]}·${EL_KR[ze]}</div></div>`;
+}
+function sinsalHTML(sinsal){
+  const order=['천을귀인','역마','도화','화개','장성'];
+  const tags=[];
+  order.forEach(s=>{if(sinsal[s]){const pos=sinsal[s].map(x=>x.lbl.replace(/ .*/,'')).join('·');tags.push(`<span class="sinsal-tag">${s}살 (${pos})</span>`);}});
+  return tags.length?tags.join(''):'<span class="sinsal-tag" style="border-color:var(--border);color:var(--cream3)">뚜렷한 신살 없음</span>';
+}
+function render(){
+  state.name=document.getElementById('i-name').value;
+  const saju=computeSaju();if(!saju)return;state.saju=saju;
+  document.getElementById('manse').classList.add('show');
+  document.getElementById('pillars').innerHTML=saju.P.map((p,i)=>pillarHTML(p,i===2)).join('');
+  document.getElementById('sinsal').innerHTML=sinsalHTML(saju.sinsal);
+}
+
+function toStep2(){
+  const w=document.getElementById('warn1');let msg='';
+  if(!state.name.trim())msg='이름을 입력해주세요.';
+  else if(!state.gender)msg='성별을 선택해주세요.';
+  else if(!state.year||!state.month||!state.day)msg='생년월일을 모두 입력해주세요.';
+  else if(!LUNAR_OK)msg='만세력 모듈을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.';
+  else if(!state.saju)msg='날짜를 다시 확인해주세요.';
+  if(msg){w.textContent='✦ '+msg;w.style.display='block';return;}
+  w.style.display='none';goTo('pg2');
+}
+function selPkg(i,name,price){state.pkg={i,name,price};[0,1,2].forEach(x=>document.getElementById('pkg-'+x).classList.toggle('on',x===i));document.getElementById('pkg-next').disabled=false;}
+function toStep3(){document.getElementById('o-name').textContent=state.pkg.name+(state.readingType==='종합'?' 종합 사주':' 연애·결혼 사주');document.getElementById('o-user').textContent=state.name;document.getElementById('o-price').textContent=state.pkg.price.toLocaleString()+'원';goTo('pg3');}
+function selPay(el,m){state.pay=m;document.querySelectorAll('#pg3 .pay').forEach(e=>e.classList.remove('on'));el.classList.add('on');document.getElementById('pay-btn').disabled=false;}
+function pay(){const b=document.getElementById('pay-btn');b.disabled=true;b.textContent='결제 중...';setTimeout(()=>{b.disabled=false;b.textContent='결제하고 사주보기';goTo('pg4');showResult();},1200);}
+
+/* ════ 결과 ════ */
+let lastResultHTML='';let lastResultMeta={};
+async function showResult(){
+  // 결과 화면 즉시 표시 (로딩 화면 없음)
+  const s=state.saju;
+  document.getElementById('r-badge').textContent=state.pkg.name+(state.readingType==='종합'?' 종합 사주':' 연애·결혼 사주');
+  document.getElementById('r-name').textContent=state.name+'님의 사주';
+  const tl=s.hasTime?'':' · 時 미상';
+  document.getElementById('r-info').textContent=`${state.year}.${String(state.month).padStart(2,'0')}.${String(state.day).padStart(2,'0')} (${state.cal}력) · ${state.gender}성${tl}`;
+  document.getElementById('r-pillars').innerHTML=s.P.map((p,i)=>pillarHTML(p,i===2)).join('');
+  document.getElementById('r-sinsal').innerHTML=sinsalHTML(s.sinsal);
+  const dm=DM_DESC[s.dayGan]||['일간','—'];
+  document.getElementById('r-dm').textContent=s.dayGan;
+  document.getElementById('r-dm').className='dm-char '+EL_CLS[GAN_EL[s.dayGan]];
+  document.getElementById('r-dm-t').textContent=dm[0];document.getElementById('r-dm-d').textContent=dm[1];
+  // AI 풀이는 백그라운드에서 섹션별로 채워짐
+  runAI(s);
+}
+
+function buildContext(s){
+  const pdesc=s.P.filter(p=>p.gan!=='?').map(p=>`${p.lbl}: ${p.gan}${p.zhi}(${GAN_KR[p.gan]}${ZHI_KR[p.zhi]}, ${SS_KR[p.ss]||'일간'})`).join('\n');
+  const oc=Object.entries(s.oc).map(([k,v])=>`${EL_KR[k]}(${k}) ${v}`).join(', ');
+  const sinsalStr=Object.keys(s.sinsal).length?Object.entries(s.sinsal).map(([k,v])=>`${k}살(${v.map(x=>x.lbl.replace(/ .*/,'')).join('·')})`).join(', '):'없음';
+  const dwStr=s.daewoon.length?s.daewoon.map(d=>`${d.age}세~ ${d.gz}(${GAN_KR[d.gz[0]]}${ZHI_KR[d.gz[1]]})`).join(', '):'정보 없음';
+  const swStr=s.saewoon.map(w=>`${w.year} ${w.gz}(${GAN_KR[w.gz[0]]}${ZHI_KR[w.gz[1]]})`).join(', ');
+  return `[상담자] ${state.name}, ${state.gender}성, ${state.year}년 ${state.month}월 ${state.day}일생(${state.cal}력)${s.hasTime?'':' (출생시 미상)'}
+[사주팔자]\n${pdesc}
+[일간] ${s.dayGan}(${GAN_KR[s.dayGan]}) — ${DM_DESC[s.dayGan][0]}
+[오행 분포] ${oc}
+[신살] ${sinsalStr}
+[대운 흐름] ${dwStr}
+[향후 세운] ${swStr}`;
+}
+
+async function runAI(s){
+  const ctx=buildContext(s);const nm=state.name;
+  const persp=state.readingType==='종합'?'인생 전반(성격·직업·재물·건강·운세) 관점':'연애·결혼 관점';
+  const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.
+
+${ctx}
+
+[반드시 지킬 규칙]
+- "${nm}님"이라고 부를 것
+- 실제 사주 글자(일간·지지·십성·신살·대운·세운 간지)를 콕 집어 근거로 인용. 막연한 일반론 절대 금지.
+- 명리 전문용어는 처음 나올 때 반드시 괄호로 쉽게 설명. 예: "편인(생각이 깊고 혼자 분석하는 성향)", "도화살(이성에게 인기를 끄는 기운)", "역마살(새 환경으로 이동·변화가 많은 기운)"
+- 일상의 구체적 장면으로 묘사. 예: "연락이 늦으면 혼자 가설을 수십 개 세운다"
+- 분량은 충분히. 700자 이상. 3~4문단.
+- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.`;
+
+  const loveSecs=[
+    {icon:'💗',title:'나의 연애 DNA — 사랑하는 방식',ask:'연애 초반·중반·권태기 패턴을 일간과 신살로 구체적 장면과 함께.'},
+    {icon:'✨',title:'타고난 매력 자본',ask:'타인에게 주는 첫인상과 매력을 오행·십성으로. SNS·모임에서의 모습까지.'},
+    {icon:'🔥',title:"본능적으로 끌리는 '치명적 인연'",ask:'본능적으로 끌리는 상대 유형과 위험성, 끌릴 때의 장면과 자기 점검법.'},
+    {icon:'🤍',title:"실제 안정을 줄 '진짜 배우자상'",ask:'실질적으로 잘 맞는 배우자 성향·직업·생활 패턴. 첫 만남에서 알아보는 신호.'},
+    {icon:'🌀',title:'연애에서 반복되는 약점과 탈출법',ask:'반복되는 연애 약점을 구체적 장면으로 진단하고, 깨는 행동 처방.'},
+    {icon:'⏰',title:'결혼 골든타임',ask:'향후 세운·대운 기반 결혼·인연 좋은 시기 TOP3를 <table>(순위/시기/세운간지·일주관계/인연특징)로. 표 아래 각 시기 해설.'},
+    {icon:'🌙',title:'한 줄의 운명적 조언',ask:'핵심 조언을 <div class="quote">한 줄</div>로 먼저, 그 아래 사주 근거와 따뜻한 당부 3문단.'},
+  ];
+  const lovePremium=[
+    {icon:'⚖️',title:'결혼, 해야 할까 말아야 할까',ask:'<table>(항목/확장이 되는 이유/구속이 될 수 있는 이유) 심리·경제·관계 3행. 표 아래 결론 3문단.'},
+    {icon:'💞',title:"연애 상대 알아보는 '실전 체크리스트'",ask:'좋은 인연인지 첫 만남~3개월 안에 확인할 체크포인트 5가지. 각 항목에 사주 근거 포함.'},
+    {icon:'🗺️',title:'대운 전환기와 인연 리스크',ask:'현재·다음 대운 전환기 연도와 리스크, 안전하게 넘기는 법. 실제 대운 간지·연도 인용.'},
+  ];
+  const loveVip=[
+    {icon:'📅',title:'나이대별 결혼 시나리오',ask:'지금·2년후·5년후 결혼을 <table>(시나리오/예상시기/대운세운환경/배우자상)로. 유리한 시점 결론 3문단.'},
+    {icon:'🧿',title:"사주 속 이혼수와 '액땜' 비법",ask:'갈등·이별 위험 지점을 신살·십성으로 짚고, 현대적 액땜 솔루션 3가지.'},
+    {icon:'👶',title:'자녀운과 결혼 후 가정',ask:'자녀운·가정 분위기·배우자와의 역할 균형을 사주로.'},
+    {icon:'♾️',title:'평생 인연 대운 흐름',ask:'인생 전체 대운에서 연애·결혼운이 언제 강해지고 약해지는지.'},
+  ];
+  const generalSecs=[
+    {icon:'☯',title:'사주 총론 — 타고난 그릇',ask:'일간과 전체 사주 구성으로 타고난 기질과 인생의 큰 방향을 총평.'},
+    {icon:'🎭',title:'성격과 본성',ask:'겉성격과 속마음, 장단점을 일간·오행으로. 일상 장면 예시 포함.'},
+    {icon:'💼',title:'직업과 적성',ask:'잘 맞는 직업·진로와 일하는 스타일, 피해야 할 분야를 십성·오행으로.'},
+    {icon:'💰',title:'재물운',ask:'평생 재물 흐름, 돈 버는 방식, 재물 들어오는 시기를 재성과 대운으로.'},
+    {icon:'🌿',title:'건강운',ask:'타고난 체질과 약한 부분, 평생 관리할 건강 포인트를 오행 균형으로.'},
+    {icon:'🤝',title:'대인관계와 인복',ask:'사람 사귀는 스타일, 귀인 유형, 조심할 인연을 구체적으로.'},
+    {icon:'🌟',title:'2025~2026년 운세',ask:'올해·내년 세운·대운 흐름, 좋은 시기와 조심할 시기를 실제 간지·월로.'},
+    {icon:'🕯️',title:'인생 종합 조언',ask:'핵심 조언을 <div class="quote">한 줄</div>로, 그 아래 사주 근거와 따뜻한 당부 3문단.'},
+  ];
+
+  let secs;
+  if(state.readingType==='종합'){
+    secs=generalSecs.slice();
+    if(state.pkg.name==='프리미엄')secs=[...generalSecs,loveSecs[0],loveSecs[3]];
+    if(state.pkg.name==='VIP')secs=[...generalSecs,loveSecs[0],loveSecs[3],loveSecs[5],loveVip[3]];
+  }else{
+    secs=loveSecs.slice();
+    if(state.pkg.name==='프리미엄')secs=[...loveSecs.slice(0,6),...lovePremium,loveSecs[6]];
+    if(state.pkg.name==='VIP')secs=[...loveSecs.slice(0,6),...lovePremium,...loveVip,loveSecs[6]];
+  }
+
+  const body=document.getElementById('ai-body');body.innerHTML='';
+
+  // 모든 섹션 플레이스홀더 먼저 추가
+  const blocks=secs.map(sec=>{
+    const div=document.createElement('div');
+    div.innerHTML=`<h3>${sec.icon} ${sec.title}</h3><p class="sec-load" style="color:var(--cream3);opacity:.5;animation:pulse 1.2s infinite">월하 선생이 풀이 중입니다…</p>`;
+    body.appendChild(div);
+    return div;
+  });
+
+  // 저장/다시보기 버튼 미리 추가
+  const outro=document.createElement('div');
+  outro.style.cssText='margin-top:24px;padding-top:16px;border-top:1px solid var(--border2);text-align:center;font-family:Cormorant Garamond,serif;font-style:italic;font-size:14px;color:var(--cream3)';
+  outro.textContent='― 月下 月下緣 ―';
+  body.appendChild(outro);
+
+  // 각 섹션을 완성되는 대로 채우기
+  for(let i=0;i<secs.length;i++){
+    const sec=secs[i];
+    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask+'\n700자 이상 3문단.',2);
+    blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||fallback(sec,s)}`;
+    // 첫 섹션 완성되면 저장 버튼 표시
+    if(i===0){
+      document.getElementById('save-btn').style.display=gUser?'flex':'none';
+    }
+  }
+  lastResultHTML=body.innerHTML;
+  lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
+}
+
+function fallback(sec,s){
+  const nm=state.name;return`<p><strong>${nm}</strong>님은 <strong>${DM_DESC[s.dayGan][0]}</strong>입니다. ${sec.title} 항목에서 그 특성이 드러납니다. 서버 연결 문제로 자세한 풀이를 받지 못했습니다.</p><p style="color:var(--cream3);font-size:12px">(AI 연결이 원활하지 않아 요약본이 표시되었습니다.)</p>`;
+}
+
+/* ════ API 호출 ════ */
+let AI_LAST_ERR='';
+async function fetchAI(prompt,retries){
+  for(let a=0;a<=retries;a++){
+    try{
+      const res=await fetch('/api/saju',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+      if(!res.ok){AI_LAST_ERR='HTTP '+res.status;await sleep(800);continue;}
+      const data=await res.json();
+      if(data&&data.error){AI_LAST_ERR=data.error;await sleep(800);continue;}
+      const t=(data&&data.text)?data.text:'';
+      if(t&&t.trim()){AI_LAST_ERR='';return t.replace(/```html|```/g,'').trim();}
+      AI_LAST_ERR='empty response';await sleep(800);
+    }catch(e){AI_LAST_ERR='fetch failed: '+(e.message||e);await sleep(800);}
+  }
+  return '';
+}
+
+/* ════ 저장 / 다시보기 ════ */
+function saveResult(){
+  if(!gUser){alert('구글 로그인 후 저장할 수 있어요.');return;}
+  const key='saju_'+gUser.sub;
+  let saved=[];
+  try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  saved.unshift({...lastResultMeta,html:lastResultHTML,id:Date.now()});
+  if(saved.length>20)saved=saved.slice(0,20);
+  localStorage.setItem(key,JSON.stringify(saved));
+  document.getElementById('save-btn').textContent='✅ 저장 완료! (내 풀이에서 확인)';
+  document.getElementById('save-btn').onclick=()=>goTo('pgMy');
+}
+function loadMyList(){
+  if(!gUser){document.getElementById('my-not-logged').style.display='block';document.getElementById('my-list-wrap').style.display='none';return;}
+  document.getElementById('my-not-logged').style.display='none';
+  document.getElementById('my-list-wrap').style.display='block';
+  const key='saju_'+gUser.sub;
+  let saved=[];
+  try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  const list=document.getElementById('my-list');
+  if(!saved.length){list.innerHTML='<div style="text-align:center;padding:32px;color:var(--cream3)">저장된 풀이가 없어요.<br>사주를 보고 저장해보세요!</div>';return;}
+  list.innerHTML=saved.map((r,i)=>`<div class="my-item" onclick="viewSaved(${i})"><div class="my-item-top"><span class="my-item-name">${esc(r.name)}님의 사주</span><span class="my-item-date">${esc(r.date)}</span></div><div class="my-item-type">${esc(r.type==='종합'?'🌙 종합 사주':'💗 연애·결혼 사주')} · ${esc(r.pkg||'')}</div></div>`).join('');
+}
+function viewSaved(idx){
+  const key='saju_'+gUser.sub;
+  let saved=[];try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  const r=saved[idx];if(!r)return;
+  document.getElementById('saved-badge').textContent=(r.type==='종합'?'종합 사주':'연애·결혼 사주');
+  document.getElementById('saved-name').textContent=r.name+'님의 사주';
+  document.getElementById('saved-info').textContent=r.info||r.date;
+  document.getElementById('saved-body').innerHTML=r.html||'내용이 없습니다.';
+  goTo('pgSaved');
+}
+
+/* ════ 궁합 ════ */
+let gState={A:{gender:''},B:{gender:''},pay:''};
+function gSetGender(who,g){
+  gState[who].gender=g;
+  document.querySelectorAll(`#pgG .field-row`)[who==='A'?0:3]?.querySelectorAll('.seg-opt').forEach(e=>e.classList.toggle('on',e.textContent===g));
+}
+function gComputeOne(who){
+  const y=parseInt(document.getElementById(`g${who}-year`).value);
+  const m=parseInt(document.getElementById(`g${who}-month`).value);
+  const d=parseInt(document.getElementById(`g${who}-day`).value);
+  const cal=document.getElementById(`g${who}-cal`).value;
+  const name=document.getElementById(`g${who}-name`).value.trim();
+  const gender=gState[who].gender;
+  if(!name||!gender||!(y>=1920&&y<=2012)||!m||!d)return null;
+  if(!LUNAR_OK)return null;
+  try{
+    let solar;
+    if(cal==='음'){solar=Lunar.fromYmdHms(y,m,d,12,0,0).getSolar();}else{solar=Solar.fromYmdHms(y,m,d,12,0,0);}
+    const ec=solar.getLunar().getEightChar();
+    const P=[{lbl:'연',gan:ec.getYearGan(),zhi:ec.getYearZhi()},{lbl:'월',gan:ec.getMonthGan(),zhi:ec.getMonthZhi()},{lbl:'일',gan:ec.getDayGan(),zhi:ec.getDayZhi()}];
+    const oc={木:0,火:0,土:0,金:0,水:0};P.forEach(p=>{oc[GAN_EL[p.gan]]++;oc[ZHI_EL[p.zhi]]++;});
+    return{name,gender,y,m,d,cal,P,dayGan:ec.getDayGan(),dayZhi:ec.getDayZhi(),oc};
+  }catch(e){return null;}
+}
+function gToPay(){
+  const w=document.getElementById('gWarn');
+  const A=gComputeOne('A'),B=gComputeOne('B');
+  if(!A||!B){w.textContent='✦ 두 사람의 정보를 모두 정확히 입력해주세요.';w.style.display='block';return;}
+  w.style.display='none';gState.A2=A;gState.B2=B;
+  document.getElementById('gPayWho').textContent=`${A.name} ♥ ${B.name}`;goTo('pgGpay');
+}
+function gSelPay(el,m){gState.pay=m;document.querySelectorAll('#pgGpay .pay').forEach(e=>e.classList.remove('on'));el.classList.add('on');document.getElementById('gPayBtn').disabled=false;}
+function gPay(){const b=document.getElementById('gPayBtn');b.disabled=true;b.textContent='결제 중...';setTimeout(()=>{b.disabled=false;b.textContent='결제하고 궁합보기';goTo('pgGres');gShowResult();},1200);}
+function gPillarMini(p){
+  return`<div style="background:rgba(200,164,90,.04);border:1px solid var(--border2);border-radius:4px;padding:13px;text-align:center"><div style="font-size:11px;color:var(--gold);margin-bottom:9px">${esc(p.name)} (${p.gender})</div><div style="display:flex;justify-content:center;gap:6px">${p.P.map(x=>`<div><div style="font-size:8px;color:var(--cream3)">${x.lbl}</div><div class="${EL_CLS[GAN_EL[x.gan]]}" style="font-family:'Noto Serif KR',serif;font-size:17px">${x.gan}</div><div class="${EL_CLS[ZHI_EL[x.zhi]]}" style="font-family:'Noto Serif KR',serif;font-size:17px">${x.zhi}</div></div>`).join('')}</div><div style="font-size:10px;color:var(--cream3);margin-top:7px">${DM_DESC[p.dayGan][0]}</div></div>`;
+}
+async function gShowResult(){
+  document.getElementById('gLoading').style.display='block';document.getElementById('gResult').style.display='none';
+  const A=gState.A2,B=gState.B2;
+  document.getElementById('gResName').textContent=`${A.name} ♥ ${B.name}`;
+  document.getElementById('gResInfo').textContent=`${A.y}.${A.m}.${A.d} · ${B.y}.${B.m}.${B.d}`;
+  document.getElementById('gPairView').innerHTML=gPillarMini(A)+gPillarMini(B);
+  const gCtx=p=>{const pd=p.P.map(x=>`${x.lbl}주 ${x.gan}${x.zhi}(${GAN_KR[x.gan]}${ZHI_KR[x.zhi]})`).join(' ');const oc=Object.entries(p.oc).filter(([k,v])=>v>0).map(([k,v])=>`${EL_KR[k]}${v}`).join(' ');return`${p.name}(${p.gender}, ${p.y}.${p.m}.${p.d}): 일간 ${p.dayGan}(${GAN_KR[p.dayGan]}), ${pd}, 오행 ${oc}`;};
+  const ctx=`[첫 번째] ${gCtx(A)}\n[두 번째] ${gCtx(B)}`;
+  const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 두 사람 사주의 일간·오행·지지 상생상극·합충을 실제로 분석하세요.
+
+${ctx}
+
+[규칙]
+- 두 사람 이름(${A.name}, ${B.name})을 직접 부를 것
+- 실제 사주 글자와 오행 관계를 근거로 인용
+- 전문용어는 괄호로 쉽게 설명
+- 일상의 구체적 장면으로 묘사
+- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.`;
+  const secs=[
+    {icon:'💞',title:'두 사람의 끌림과 첫인상',ask:`두 일간(${A.dayGan}·${B.dayGan}) 관계로 본 서로의 끌림과 첫인상. 700자 이상.`},
+    {icon:'🔥',title:'궁합 점수와 핵심 케미',ask:'오행 상생상극으로 궁합 점수(100점 만점)를 <div class="quote">○○점</div>으로 제시하고 근거 설명. 700자 이상.'},
+    {icon:'💬',title:'연애할 때의 모습',ask:'사귈 때 일상·데이트·표현방식 궁합을 구체적 장면으로. 700자 이상.'},
+    {icon:'⚡',title:'갈등 포인트와 해결법',ask:'두 사주가 부딪히는 지점과 극복 방법. 700자 이상.'},
+    {icon:'💍',title:'결혼 궁합과 미래',ask:'결혼했을 때 궁합, 장기적 관계 전망. 마지막에 <div class="quote">두 사람을 위한 조언</div>. 700자 이상.'},
+  ];
+  const body=document.getElementById('gAiBody');body.innerHTML='';
+  const prog=document.getElementById('gLoadProg');if(prog)prog.textContent='연결 확인 중…';
+  const probe=await fetchAI(common+'\n\n[이번 항목] '+secs[0].title+'\n'+secs[0].ask,2);
+  if(!probe){const b=document.createElement('div');b.style.cssText='background:rgba(176,70,104,.12);border:1px solid var(--rose);border-radius:4px;padding:15px;margin-bottom:16px;font-size:13px';b.innerHTML=`<strong style="color:var(--rose2)">⚠ AI 연결 실패</strong><br><span style="color:var(--cream3);font-size:12px">원인: ${AI_LAST_ERR||'알 수 없음'}</span>`;body.appendChild(b);}
+  for(let i=0;i<secs.length;i++){
+    const sec=secs[i];if(prog)prog.textContent=`풀이 중 · ${i+1} / ${secs.length}`;
+    const txt=(i===0&&probe)?probe:await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,2);
+    const block=document.createElement('div');block.innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||`<p>${esc(A.name)}님과 ${esc(B.name)}님의 궁합입니다.</p>`}`;body.appendChild(block);
+  }
+  document.getElementById('gLoading').style.display='none';document.getElementById('gResult').style.display='block';window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ════ 후기 ════ */
+const SEED_REVIEWS=[
+  {n:'이*은',s:5,d:'2025.05',t:'배우자상 설명이 지금 만나는 사람이랑 똑같아서 소름. 결혼 골든타임도 구체적으로 알려줘서 좋았어요.'},
+  {n:'최*아',s:5,d:'2025.05',t:'연애할 때 제 약점을 정확히 짚어줘서 놀랐어요. "혼자 분석하다 지친다"는 말에 울컥했네요.'},
+  {n:'박*현',s:5,d:'2025.04',t:'치명적 인연 부분 보고 소름 돋았어요. 진짜 제가 끌리는 스타일 그대로였어요.'},
+  {n:'정*우',s:5,d:'2025.04',t:'생각보다 길고 자세해서 만족했어요. 일반인도 이해하기 쉽게 설명해줘서 좋았어요.'},
+  {n:'김*지',s:5,d:'2025.04',t:'결혼 시나리오 표가 제일 좋았어요. 2년 후 vs 지금 비교가 현실적이라 도움됐어요.'},
+  {n:'한*름',s:5,d:'2025.03',t:'다른 사주 사이트보다 훨씬 구체적이에요. 그냥 좋은 말만 하는 게 아니라 약점도 콕 집어줘요.'},
+  {n:'오*희',s:5,d:'2025.03',t:'재미로 봤는데 연애 패턴이 너무 맞아서 친구한테도 추천했어요.'},
+  {n:'서*나',s:5,d:'2025.03',t:'운명적 조언 한 줄이 진짜 마음에 남아요. 캡처해서 저장해뒀어요.'},
+  {n:'유*경',s:5,d:'2025.02',t:'대운 흐름까지 봐주니까 신뢰가 가요. 결혼 골든타임 시기 메모해뒀습니다.'},
+  {n:'강*비',s:5,d:'2025.02',t:'가격도 합리적이고 내용도 알차요. 연애운 궁금한 사람한테 강추!'},
+];
+const REVIEW_BASE=2847;
+let userReviews=[];
+function maskName(n){const s=String(n).trim();if(s.includes('*'))return s;if(s.length<=1)return s+'*';if(s.length===2)return s[0]+'*';return s[0]+'*'.repeat(s.length-2)+s[s.length-1];}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function renderReviews(){
+  const all=[...userReviews,...SEED_REVIEWS].filter(r=>r.s>=4);
+  const box=document.getElementById('reviews');if(!box)return;
+  box.innerHTML=all.map(r=>`<div class="review"><div class="review-head"><span class="review-stars">${'★'.repeat(r.s)}</span><span class="review-name">${esc(maskName(r.n))}</span><span class="review-date">${esc(r.d)}</span></div><div class="review-text">${esc(r.t)}</div></div>`).join('');
+  const total=REVIEW_BASE+userReviews.filter(r=>r.s>=4).length;
+  const el=document.getElementById('review-avg');if(el)el.textContent=`★ 4.9 · ${total.toLocaleString()}개`;
+}
+let pickedStar=5;
+function openReview(){document.getElementById('review-modal').style.display='flex';pickedStar=5;paintStars();}
+function closeReview(){document.getElementById('review-modal').style.display='none';}
+function paintStars(){document.querySelectorAll('#star-pick span').forEach(s=>{s.style.color=parseInt(s.dataset.v)<=pickedStar?'var(--gold)':'var(--cream3)';});}
+function submitReview(){
+  const name=document.getElementById('rv-name').value.trim();const text=document.getElementById('rv-text').value.trim();const w=document.getElementById('rv-warn');
+  if(!name||!text){w.textContent='닉네임과 후기 내용을 모두 입력해주세요.';w.style.display='block';return;}
+  w.style.display='none';
+  const today=new Date();const d=`${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}`;
+  userReviews.unshift({n:name,s:pickedStar,d,t:text});
+  closeReview();document.getElementById('rv-name').value='';document.getElementById('rv-text').value='';
+  if(pickedStar>=4){renderReviews();}else{alert('소중한 후기 감사합니다! 검토 후 반영됩니다.');}
+}
+
+/* ════ 구글 로그인 ════ */
+// ⚠️ 아래 YOUR_GOOGLE_CLIENT_ID를 Google Cloud Console에서 발급받은 Client ID로 교체하세요
+const GOOGLE_CLIENT_ID='25345900699-269nfjsmcr7a22fh67f9p330uaj8nqhk.apps.googleusercontent.com';
+let gUser=null;
+function triggerGLogin(){
+  if(typeof google==='undefined'){
+    alert('Google 로그인 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;
+  }
+  try{
+    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});
+    google.accounts.id.prompt((notification)=>{
+      if(notification.isNotDisplayed()||notification.isSkippedMoment()){
+        // 팝업 차단 시 버튼 방식으로 fallback
+        document.getElementById('g-btn-wrap').style.display='block';
+        document.getElementById('g_id_signin_btn').style.display='none';
+        google.accounts.id.renderButton(document.getElementById('g-btn-wrap'),{theme:'outline',size:'large',text:'signin_with',shape:'pill',width:200});
+      }
+    });
+  }catch(e){alert('로그인 중 오류가 발생했습니다: '+e.message);}
+}
+function onGoogleLogin(response){
+  const payload=parseJwt(response.credential);
+  gUser={sub:payload.sub,name:payload.name,email:payload.email,picture:payload.picture};
+  document.getElementById('g-signin-area').style.display='none';
+  document.getElementById('g-user-area').style.display='flex';
+  document.getElementById('g-user-nm').textContent=payload.name.split(' ')[0]+'님';
+  const pic=document.getElementById('g-user-pic');
+  pic.src=payload.picture;pic.onerror=()=>{pic.src='';};
+  const sb=document.getElementById('save-btn');if(sb&&document.getElementById('result').style.display!=='none')sb.style.display='flex';
+}
+function parseJwt(token){try{return JSON.parse(atob(token.split('.')[1]));}catch(e){return{};}}
+function showLogout(){
+  document.getElementById('logout-info').textContent=(gUser?.name||'')+'님으로 로그인 중';
+  document.getElementById('logout-modal').style.display='flex';
+}
+function doLogout(){gUser=null;document.getElementById('g-signin-area').style.display='flex';document.getElementById('g-user-area').style.display='none';closeModal('logout-modal');goTo('pg0');}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+/* ════ 공통 ════ */
+function goTo(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='pgMy')loadMyList();
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+window.addEventListener('load',()=>{
+  LUNAR_OK=(typeof Solar!=='undefined');
+  renderReviews();
+  document.querySelectorAll('#star-pick span').forEach(s=>{s.addEventListener('click',()=>{pickedStar=parseInt(s.dataset.v);paintStars();});});
+  // Google ID 초기화
+  if(typeof google!=='undefined'){
+    try{google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});}catch(e){}
+  }
+});
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>월하연(月下緣) — AI 연애·결혼 사주</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
