@@ -657,10 +657,12 @@ async function runAI(s){
   const relNote=state.relStatus?`\n[현재 연애 상태] ${state.relStatus} — 이 상태에 맞는 현실적 조언을 포함할 것.`:'';
   const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.${relNote}
 
+⚠️ 가장 중요한 규칙: 반드시 "${nm}님"이라고 부를 것. "님"만 단독으로 절대 사용 금지. "그분", "당신" 등 대체어도 금지. 매 문단 첫 문장에서 반드시 "${nm}님"을 사용할 것.
+
 ${ctx}
 
 [반드시 지킬 규칙]
-- "${nm}님"이라고 부를 것
+- ⚠️ 호칭 필수: 반드시 "${nm}님"만 사용. "님"만 단독 사용, "당신", "그분" 절대 금지. 모든 문단에서 "${nm}님"을 사용할 것.
 - 실제 사주 글자(일간·지지·십성·신살·대운·세운 간지)를 콕 집어 근거로 인용. 막연한 일반론 절대 금지.
 - 명리 전문용어는 처음 나올 때 반드시 괄호로 쉽게 설명. 예: "편인(생각이 깊고 혼자 분석하는 성향)", "도화살(이성에게 인기를 끄는 기운)", "역마살(새 환경으로 이동·변화가 많은 기운)"
 - 일상의 구체적 장면으로 묘사. 예: "연락이 늦으면 혼자 가설을 수십 개 세운다"
@@ -1018,7 +1020,7 @@ async function retrySection(btn,icon,title,idx){
   const ctx=buildContext(s);const nm=state.name;
   const persp=state.readingType==='종합'?'인생 전반(성격·직업·재물·건강·운세) 관점':'연애·결혼 관점';
   const relNote=state.relStatus?` 현재 연애 상태: ${state.relStatus}.`:'';
-  const prompt=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.${relNote}\n\n${ctx}\n\n[규칙]\n- "${nm}님"이라고 부를 것\n- 실제 사주 글자를 콕 집어 근거로 인용\n- 전문용어는 괄호로 쉽게 설명\n- 일상의 구체적 장면으로 묘사\n- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.\n\n[이번 항목] ${title}\n최소 700자, 3문단 이상.`;
+  const prompt=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.${relNote}\n\n⚠️ 반드시 "${nm}님"이라고만 부를 것. "님" 단독, "당신", "그분" 절대 금지.\n\n${ctx}\n\n[규칙]\n- 반드시 "${nm}님"을 사용. 모든 문단에서.\n- 실제 사주 글자를 콕 집어 근거로 인용\n- 전문용어는 괄호로 쉽게 설명\n- 일상의 구체적 장면으로 묘사\n- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.\n\n[이번 항목] ${title}\n최소 700자, 3문단 이상.`;
   const txt=await fetchAI(prompt,2);
   if(txt){block.innerHTML=`<h3>${icon} ${title}</h3>${txt}`;}
   else{btn.textContent='🔄 다시 불러오기';btn.disabled=false;}
