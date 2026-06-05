@@ -454,7 +454,7 @@ let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,
 */
 const SUPABASE_URL = 'https://tyqhuntiqjdezmzkzrw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_epPzV1eUGM-Boyil4HP38g_4a-rBj3e';
-const sb = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.startsWith('ey'))
+const sb = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 let currentUser = null;
