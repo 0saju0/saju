@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>월하연(月下緣) — AI 연애·결혼 사주</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -183,7 +184,32 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 .page.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
+
+/* 로그인/마이페이지 */
+.auth-bar{position:sticky;top:0;z-index:20;background:rgba(10,7,18,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2)}
+.auth-inner{max-width:720px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.auth-logo{font-family:'Noto Serif KR',serif;font-size:14px;color:var(--gold);letter-spacing:2px}
+.auth-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.auth-email{font-size:11px;color:var(--cream3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-mini-btn{border:1px solid rgba(240,232,216,.12);background:rgba(255,255,255,.03);color:var(--cream2);border-radius:3px;padding:8px 10px;font-size:11px;cursor:pointer}
+.auth-mini-btn.gold{border-color:rgba(200,164,90,.35);color:var(--gold);background:var(--gold-dim)}
+.auth-panel{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:22px;margin-bottom:22px}
+.auth-panel h3{font-family:'Noto Serif KR',serif;font-size:17px;margin-bottom:8px;color:var(--cream)}
+.auth-panel p{font-size:13px;color:var(--cream3);line-height:1.8;margin-bottom:16px}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--cream3);font-size:11px;letter-spacing:1px}
+.auth-divider:before,.auth-divider:after{content:'';flex:1;height:1px;background:var(--border2)}
+.my-list{display:grid;gap:12px}
+.my-item{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:16px;cursor:pointer;transition:all .2s}
+.my-item:hover{border-color:var(--border)}
+.my-item-title{font-family:'Noto Serif KR',serif;font-size:15px;color:var(--cream);margin-bottom:5px}
+.my-item-meta{font-size:11px;color:var(--cream3);line-height:1.7}
+.my-empty{border:1px dashed var(--border);padding:26px;text-align:center;color:var(--cream3);font-size:13px}
+.save-note{font-size:11px;color:var(--gold);letter-spacing:1px;margin-top:8px;text-align:center}
+
 @media(max-width:520px){
+  .auth-grid{grid-template-columns:1fr}.auth-inner{padding:9px 16px}.auth-email{max-width:120px}
+
   .master{grid-template-columns:1fr;text-align:center}.master-pic{margin:0 auto}
   .pkgs{grid-template-columns:1fr}.pays{grid-template-columns:1fr}
   .field-row{grid-template-columns:1fr}.hero-stats{gap:18px}
@@ -195,6 +221,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 <body>
 <div class="bg-light l1"></div><div class="bg-light l2"></div><div class="bg-light l3"></div>
 <div id="root">
+<div class="auth-bar">
+  <div class="auth-inner">
+    <div class="auth-logo">月下緣</div>
+    <div class="auth-actions" id="auth-actions">
+      <button class="auth-mini-btn gold" onclick="goTo('pgAuth')">로그인</button>
+    </div>
+  </div>
+</div>
 
 <!-- LANDING -->
 <div class="page active" id="pg0"><div class="container">
@@ -222,32 +256,49 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 
   <div class="section">
-    <div class="section-title">후기 <span style="color:var(--cream3);font-family:'Cormorant Garamond',serif;letter-spacing:1px;text-transform:none;font-size:13px;margin-left:auto" id="review-avg"></span></div>
-    <div class="reviews" id="reviews"></div>
-    <button class="btn-ghost" style="width:100%;margin-top:14px" onclick="openReview()">✍️ 후기 작성하기</button>
-  </div>
-
-  <!-- 후기 작성 모달 -->
-  <div id="review-modal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:26px;max-width:420px;width:100%">
-      <div style="font-family:'Noto Serif KR',serif;font-size:18px;color:var(--cream);margin-bottom:20px">후기 작성</div>
-      <div class="field"><label class="field-label">별점</label>
-        <div id="star-pick" style="font-size:30px;letter-spacing:6px;cursor:pointer;color:var(--cream3)">
-          <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-        </div>
-      </div>
-      <div class="field"><label class="field-label">닉네임</label><input class="input" id="rv-name" placeholder="홍*동" maxlength="10"></div>
-      <div class="field"><label class="field-label">후기 내용</label><textarea class="input" id="rv-text" rows="3" placeholder="솔직한 후기를 남겨주세요" maxlength="200" style="resize:none"></textarea></div>
-      <div id="rv-warn" style="display:none;color:#e08080;font-size:12px;text-align:center;margin-bottom:10px"></div>
-      <div class="btn-rowx" style="margin-top:8px">
-        <button class="btn-ghost" onclick="closeReview()">취소</button>
-        <button class="btn" onclick="submitReview()">등록</button>
-      </div>
+    <div class="section-title">후기</div>
+    <div class="reviews">
+      <div class="review"><div class="review-head"><span class="review-stars">★★★★★</span><span class="review-name">이*은</span><span class="review-date">2025.05</span></div><div class="review-text"><em>배우자상 설명이 지금 만나는 사람이랑 똑같아서 소름.</em> 결혼 골든타임도 구체적으로 알려줘서 좋았어요.</div></div>
+      <div class="review"><div class="review-head"><span class="review-stars">★★★★★</span><span class="review-name">최*아</span><span class="review-date">2025.04</span></div><div class="review-text">연애할 때 제 약점을 정확히 짚어줘서 놀랐어요. <em>"혼자 분석하다 지친다"는 말에 울컥했네요.</em></div></div>
     </div>
   </div>
 
-  <div style="padding-bottom:52px;display:flex;flex-direction:column;gap:11px"><button class="btn" onclick="startReading('연애')">💗 연애·결혼 사주 보기 →</button><button class="btn-ghost" style="width:100%;padding:17px" onclick="startReading('종합')">🌙 종합 사주 보기 (성격·직업·재물·운세) →</button><button class="btn-ghost" style="width:100%;padding:17px" onclick="goTo('pgG')">💞 두 사람 궁합 보기 →</button></div>
+  <div style="padding-bottom:52px"><button class="btn" onclick="goTo('pg1')">내 인연 사주 보기 →</button></div>
 </div></div>
+
+
+<!-- AUTH -->
+<div class="page" id="pgAuth"><div class="container"><div class="section">
+  <div class="section-title">로그인 / 회원가입</div>
+  <div class="auth-panel">
+    <h3>월하연 계정</h3>
+    <p>구글 또는 이메일로 로그인하면 풀이 결과가 자동 저장되고, 마이페이지에서 다시 볼 수 있습니다.</p>
+    <button class="btn" onclick="loginWithGoogle()">Google로 계속하기</button>
+    <div class="auth-divider">또는 이메일로 이용</div>
+    <div class="field"><label class="field-label">이메일</label><input class="input" id="auth-email" type="email" placeholder="email@example.com"></div>
+    <div class="field"><label class="field-label">비밀번호</label><input class="input" id="auth-pass" type="password" placeholder="6자 이상"></div>
+    <div class="auth-grid">
+      <button class="btn" onclick="signUpEmail()">이메일 회원가입</button>
+      <button class="btn-ghost" onclick="loginEmail()">이메일 로그인</button>
+    </div>
+    <div class="warn" id="auth-warn" style="display:none;margin-top:14px"></div>
+  </div>
+  <button class="btn-ghost" onclick="goTo('pg0')">← 홈으로</button>
+</div></div></div>
+
+<!-- MYPAGE -->
+<div class="page" id="pgMy"><div class="container"><div class="section">
+  <div class="section-title">마이페이지</div>
+  <div class="auth-panel">
+    <h3>저장된 사주 결과</h3>
+    <p id="my-user">로그인 정보를 확인 중입니다.</p>
+    <div id="my-list" class="my-list"></div>
+  </div>
+  <div class="btn-rowx">
+    <button class="btn-ghost" onclick="goTo('pg0')">← 홈</button>
+    <button class="btn" onclick="goTo('pg1')">새 사주 보기</button>
+  </div>
+</div></div></div>
 
 <!-- STEP 1 -->
 <div class="page" id="pg1"><div class="container"><div class="section">
@@ -285,20 +336,20 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
     <div class="card-head"><div class="card-head-title">연애·결혼 사주</div><div class="card-head-step">Step 2 / 3</div></div>
     <div class="card-body">
       <div class="pkgs">
-        <div class="pkg" id="pkg-0" onclick="selPkg(0,'기본',9900)">
+        <div class="pkg" id="pkg-0" onclick="selPkg(0,'기본',12900)">
           <div class="pkg-icon">💗</div><div class="pkg-name">기본</div>
           <ul class="pkg-items"><li>나의 연애 DNA</li><li>타고난 매력 자본</li><li>끌리는 인연 유형</li><li>운명적 조언</li><li><strong>7개 항목</strong></li></ul>
-          <div class="pkg-price">9,900<span>원</span></div>
+          <div class="pkg-price">12,900<span>원</span></div>
         </div>
-        <div class="pkg" id="pkg-1" onclick="selPkg(1,'프리미엄',19900)">
+        <div class="pkg" id="pkg-1" onclick="selPkg(1,'프리미엄',24900)">
           <div class="pkg-badge">인기</div><div class="pkg-icon">💞</div><div class="pkg-name">프리미엄</div>
           <ul class="pkg-items"><li>기본 전체 포함</li><li>실질적 배우자상</li><li>결혼 골든타임 표</li><li>결혼 확장vs구속</li><li><strong>10개 항목</strong></li></ul>
-          <div class="pkg-price">19,900<span>원</span></div>
+          <div class="pkg-price">24,900<span>원</span></div>
         </div>
-        <div class="pkg" id="pkg-2" onclick="selPkg(2,'VIP',29900)">
+        <div class="pkg" id="pkg-2" onclick="selPkg(2,'VIP',44900)">
           <div class="pkg-icon">💍</div><div class="pkg-name">VIP</div>
           <ul class="pkg-items"><li>프리미엄 포함</li><li>나이대별 결혼 시나리오</li><li>이혼수·액땜 비법</li><li>평생 인연 대운</li><li><strong>14개 항목</strong></li></ul>
-          <div class="pkg-price">29,900<span>원</span></div>
+          <div class="pkg-price">44,900<span>원</span></div>
         </div>
       </div>
       <div class="btn-rowx"><button class="btn-ghost" onclick="goTo('pg1')">← 이전</button><button class="btn" id="pkg-next" disabled onclick="toStep3()">결제하기 →</button></div>
@@ -336,7 +387,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
     <div style="padding:70px 0"><div class="loading">
       <div class="l-orb"><div class="l-inner">🌙</div></div>
       <div class="l-text">인연의 실타래를 풀고 있습니다</div>
-      <div class="l-prog" id="load-prog">· · ·</div>
+      <div class="l-prog">· · ·</div>
     </div></div>
   </div>
   <div id="result" style="display:none">
@@ -354,81 +405,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
       <div class="ai-head"><div class="ai-dot"></div><div class="ai-head-t" id="ai-prog">분석 준비 중</div></div>
       <div class="ai-body" id="ai-body"></div>
     </div>
-    <div style="padding:38px 0;text-align:center"><button class="btn" onclick="goTo('pg0')" style="max-width:280px;margin:0 auto;display:block">다시 보기</button></div>
-  </div>
-</div></div>
-
-<!-- 궁합 입력 -->
-<div class="page" id="pgG"><div class="container"><div class="section">
-  <div class="section-title">궁합 보기 — 두 사람 정보</div>
-  <div class="card">
-    <div class="card-head"><div class="card-head-title">두 사람의 사주</div><div class="card-head-step">궁합</div></div>
-    <div class="card-body">
-      <div style="font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:14px">👤 첫 번째 사람</div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">이름</label><input class="input" id="gA-name" placeholder="나"></div>
-        <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="gSetGender('A','남')">남</div><div class="seg-opt" onclick="gSetGender('A','여')">여</div></div></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">연도</label><input class="input" id="gA-year" type="number" placeholder="1993" min="1920" max="2012"></div>
-        <div class="field"><label class="field-label">월</label><select class="input" id="gA-month"><option value="">월</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">일</label><input class="input" id="gA-day" type="number" placeholder="15" min="1" max="31"></div>
-        <div class="field"><label class="field-label">역법</label><select class="input" id="gA-cal"><option value="양">양력</option><option value="음">음력</option></select></div>
-      </div>
-
-      <div style="height:1px;background:var(--border2);margin:8px 0 22px"></div>
-
-      <div style="font-size:12px;color:var(--rose2);letter-spacing:2px;margin-bottom:14px">💞 두 번째 사람</div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">이름</label><input class="input" id="gB-name" placeholder="상대"></div>
-        <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="gSetGender('B','남')">남</div><div class="seg-opt" onclick="gSetGender('B','여')">여</div></div></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">연도</label><input class="input" id="gB-year" type="number" placeholder="1991" min="1920" max="2012"></div>
-        <div class="field"><label class="field-label">월</label><select class="input" id="gB-month"><option value="">월</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">일</label><input class="input" id="gB-day" type="number" placeholder="20" min="1" max="31"></div>
-        <div class="field"><label class="field-label">역법</label><select class="input" id="gB-cal"><option value="양">양력</option><option value="음">음력</option></select></div>
-      </div>
-
-      <div class="warn" id="gWarn"></div>
-      <div class="btn-rowx"><button class="btn-ghost" onclick="goTo('pg0')">← 이전</button><button class="btn" onclick="gToPay()">궁합 결제하기 (19,900원) →</button></div>
-    </div>
-  </div>
-</div></div></div>
-
-<!-- 궁합 결제 -->
-<div class="page" id="pgGpay"><div class="container"><div class="section">
-  <div class="section-title">궁합 결제</div>
-  <div class="card"><div class="card-body">
-    <div class="order">
-      <div class="order-row"><span class="order-lbl">상품</span><span class="order-val">두 사람 궁합 분석</span></div>
-      <div class="order-row"><span class="order-lbl">대상</span><span class="order-val" id="gPayWho">—</span></div>
-      <div class="order-row total"><span class="order-lbl">결제 금액</span><span class="order-total-val">19,900원</span></div>
-    </div>
-    <div class="section-title" style="font-size:12px;margin-bottom:13px">결제 수단</div>
-    <div class="pays">
-      <div class="pay" onclick="gSelPay(this,'kakao')"><div class="pay-logo" style="background:#FEE500;color:#3C1E1E">K</div><div class="pay-name">카카오페이</div></div>
-      <div class="pay" onclick="gSelPay(this,'toss')"><div class="pay-logo" style="background:#0064FF;color:#fff">T</div><div class="pay-name">토스페이</div></div>
-      <div class="pay" onclick="gSelPay(this,'naver')"><div class="pay-logo" style="background:#03C75A;color:#fff">N</div><div class="pay-name">네이버페이</div></div>
-      <div class="pay" onclick="gSelPay(this,'card')"><div class="pay-logo" style="background:rgba(255,255,255,.08);color:var(--cream2);font-size:15px">💳</div><div class="pay-name">카드</div></div>
-    </div>
-    <div class="btn-rowx" style="margin-top:18px"><button class="btn-ghost" onclick="goTo('pgG')">← 이전</button><button class="btn" id="gPayBtn" disabled onclick="gPay()">결제하고 궁합보기</button></div>
-  </div></div>
-</div></div></div>
-
-<!-- 궁합 결과 -->
-<div class="page" id="pgGres"><div class="container">
-  <div id="gLoading"><div style="padding:70px 0"><div class="loading"><div class="l-orb"><div class="l-inner">💞</div></div><div class="l-text">두 사람의 인연을 맞춰보는 중</div><div class="l-prog">· · ·</div></div></div></div>
-  <div id="gResult" style="display:none">
-    <div class="res-hero"><div class="hero-badge">궁합 분석</div><div class="res-name" id="gResName">—</div><div class="res-info" id="gResInfo">—</div></div>
-    <div class="section-title">두 사람의 사주</div>
-    <div id="gPairView" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px"></div>
-    <div class="section-title">월하 선생의 궁합 풀이</div>
-    <div class="ai-box"><div class="ai-head"><div class="ai-dot"></div><div class="ai-head-t" id="gAiProg">분석 준비 중</div></div><div class="ai-body" id="gAiBody"></div></div>
     <div style="padding:38px 0;text-align:center"><button class="btn" onclick="goTo('pg0')" style="max-width:280px;margin:0 auto;display:block">다시 보기</button></div>
   </div>
 </div></div>
@@ -470,8 +446,164 @@ function samhapKey(zhi){for(const k in SAMHAP){if(k.includes(zhi))return k;}retu
 const CHEONEUL={甲:'丑未',戊:'丑未',庚:'丑未',乙:'子申',己:'子申',丙:'亥酉',丁:'亥酉',壬:'卯巳',癸:'卯巳',辛:'寅午'};
 
 let LUNAR_OK=(typeof Solar!=='undefined');
-let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애'};
-function startReading(type){state.readingType=type;goTo('pg1');}
+let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null};
+
+/* ════════ Supabase 로그인/결과 저장 설정 ════════
+1) Supabase Project URL과 anon key를 아래에 붙여넣으세요.
+2) Supabase SQL Editor에서 supabase_schema.sql 내용을 실행하세요.
+*/
+const SUPABASE_URL = '여기에_SUPABASE_PROJECT_URL';
+const SUPABASE_ANON_KEY = '여기에_SUPABASE_ANON_PUBLIC_KEY';
+const sb = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.startsWith('ey'))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+let currentUser = null;
+let lastAIHtml = '';
+
+function showAuthWarn(msg){
+  const w=document.getElementById('auth-warn');
+  if(w){w.textContent='✦ '+msg;w.style.display='block';}
+}
+async function initAuth(){
+  if(!sb){renderAuthBar();return;}
+  const {data} = await sb.auth.getUser();
+  currentUser = data.user || null;
+  renderAuthBar();
+  sb.auth.onAuthStateChange((_event, session)=>{
+    currentUser = session && session.user ? session.user : null;
+    renderAuthBar();
+  });
+}
+function renderAuthBar(){
+  const box=document.getElementById('auth-actions');
+  if(!box)return;
+  if(!sb){
+    box.innerHTML='<button class="auth-mini-btn gold" onclick="goTo(\\'pgAuth\\')">로그인 설정 필요</button>';
+    return;
+  }
+  if(currentUser){
+    box.innerHTML=`<span class="auth-email">${currentUser.email||'로그인됨'}</span>
+      <button class="auth-mini-btn gold" onclick="openMyPage()">마이페이지</button>
+      <button class="auth-mini-btn" onclick="logout()">로그아웃</button>`;
+  }else{
+    box.innerHTML='<button class="auth-mini-btn gold" onclick="goTo(\\'pgAuth\\')">로그인</button>';
+  }
+}
+async function loginWithGoogle(){
+  if(!sb){showAuthWarn('Supabase URL과 anon key를 먼저 입력해주세요.');return;}
+  await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.origin}
+  });
+}
+async function signUpEmail(){
+  if(!sb){showAuthWarn('Supabase URL과 anon key를 먼저 입력해주세요.');return;}
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-pass').value;
+  if(!email||!password){showAuthWarn('이메일과 비밀번호를 입력해주세요.');return;}
+  const {error}=await sb.auth.signUp({email,password});
+  if(error){showAuthWarn(error.message);return;}
+  showAuthWarn('회원가입 메일을 보냈어요. 이메일 인증 후 로그인해주세요.');
+}
+async function loginEmail(){
+  if(!sb){showAuthWarn('Supabase URL과 anon key를 먼저 입력해주세요.');return;}
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-pass').value;
+  if(!email||!password){showAuthWarn('이메일과 비밀번호를 입력해주세요.');return;}
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){showAuthWarn(error.message);return;}
+  currentUser=data.user;
+  renderAuthBar();
+  goTo('pg0');
+}
+async function logout(){
+  if(sb) await sb.auth.signOut();
+  currentUser=null;
+  renderAuthBar();
+  goTo('pg0');
+}
+async function requireLogin(){
+  if(!sb){alert('관리자가 Supabase 설정을 완료해야 이용할 수 있습니다.');goTo('pgAuth');return null;}
+  const {data}=await sb.auth.getUser();
+  currentUser=data.user||null;
+  renderAuthBar();
+  if(!currentUser){
+    alert('로그인 후 이용할 수 있습니다.');
+    goTo('pgAuth');
+    return null;
+  }
+  return currentUser;
+}
+async function saveResultToSupabase(aiHtml){
+  if(!sb||!currentUser||!state.saju)return;
+  const payload={
+    user_id: currentUser.id,
+    name: state.name,
+    gender: state.gender,
+    calendar_type: state.cal,
+    birth_year: state.year,
+    birth_month: state.month,
+    birth_day: state.day,
+    birth_time: String(state.timeIdx),
+    package_name: state.pkg.name,
+    package_price: state.pkg.price,
+    saju_json: state.saju,
+    result_html: aiHtml
+  };
+  const {error}=await sb.from('saju_results').insert(payload);
+  const prog=document.getElementById('ai-prog');
+  if(error){
+    console.error(error);
+    if(prog) prog.textContent='풀이 완료 · 저장 실패';
+  }else{
+    if(prog) prog.textContent='풀이 완료 · 마이페이지 저장됨';
+    const note=document.createElement('div');
+    note.className='save-note';
+    note.textContent='✓ 결과가 마이페이지에 저장되었습니다';
+    document.getElementById('ai-body').appendChild(note);
+  }
+}
+async function openMyPage(){
+  const user=await requireLogin();
+  if(!user)return;
+  goTo('pgMy');
+  await loadMyPage();
+}
+async function loadMyPage(){
+  const user=currentUser;
+  document.getElementById('my-user').textContent=user ? (user.email+' 님') : '로그인이 필요합니다.';
+  const list=document.getElementById('my-list');
+  list.innerHTML='<div class="my-empty">불러오는 중...</div>';
+  if(!sb||!user)return;
+  const {data,error}=await sb.from('saju_results').select('*').order('created_at',{ascending:false}).limit(30);
+  if(error){list.innerHTML='<div class="my-empty">불러오기 실패: '+error.message+'</div>';return;}
+  if(!data||!data.length){list.innerHTML='<div class="my-empty">아직 저장된 결과가 없습니다.</div>';return;}
+  list.innerHTML=data.map(r=>`
+    <div class="my-item" onclick="viewSavedResult('${r.id}')">
+      <div class="my-item-title">${r.name||'이름 없음'}님의 ${r.package_name||''} 리포트</div>
+      <div class="my-item-meta">${r.birth_year}.${String(r.birth_month).padStart(2,'0')}.${String(r.birth_day).padStart(2,'0')} · ${r.gender||''}성<br>${new Date(r.created_at).toLocaleString('ko-KR')}</div>
+    </div>
+  `).join('');
+}
+async function viewSavedResult(id){
+  if(!sb)return;
+  const {data,error}=await sb.from('saju_results').select('*').eq('id',id).single();
+  if(error||!data){alert('결과를 불러오지 못했어요.');return;}
+  goTo('pg4');
+  document.getElementById('loading').style.display='none';
+  document.getElementById('result').style.display='block';
+  document.getElementById('r-badge').textContent=(data.package_name||'')+' 연애·결혼 사주';
+  document.getElementById('r-name').textContent=(data.name||'고객')+'님의 인연';
+  document.getElementById('r-info').textContent=`${data.birth_year}. ${String(data.birth_month).padStart(2,'0')}. ${String(data.birth_day).padStart(2,'0')} (${data.calendar_type}력) · ${data.gender}성`;
+  document.getElementById('r-pillars').innerHTML='';
+  document.getElementById('r-sinsal').innerHTML='';
+  document.getElementById('r-dm').textContent='月';
+  document.getElementById('r-dm-t').textContent='저장된 풀이';
+  document.getElementById('r-dm-d').textContent='마이페이지에서 불러온 이전 결과입니다.';
+  document.getElementById('ai-prog').textContent='저장된 결과';
+  document.getElementById('ai-body').innerHTML=data.result_html||'<p>저장된 본문이 없습니다.</p>';
+}
+
 
 function setGender(g){state.gender=g;document.querySelectorAll('#pg1 .seg-opt').forEach(e=>e.classList.toggle('on',e.textContent===g+'성'));render();}
 function setCal(c){state.cal=c;document.getElementById('tab-y').classList.toggle('on',c==='양');document.getElementById('tab-e').classList.toggle('on',c==='음');render();}
@@ -587,15 +719,24 @@ function toStep2(){
 function selPkg(i,name,price){state.pkg={i,name,price};[0,1,2].forEach(x=>document.getElementById('pkg-'+x).classList.toggle('on',x===i));document.getElementById('pkg-next').disabled=false;}
 function toStep3(){document.getElementById('o-name').textContent=state.pkg.name+' 연애·결혼 사주';document.getElementById('o-user').textContent=state.name;document.getElementById('o-price').textContent=state.pkg.price.toLocaleString()+'원';goTo('pg3');}
 function selPay(el,m){state.pay=m;document.querySelectorAll('.pay').forEach(e=>e.classList.remove('on'));el.classList.add('on');document.getElementById('pay-btn').disabled=false;}
-function pay(){const btn=document.getElementById('pay-btn');const names={kakao:'카카오페이',toss:'토스페이',naver:'네이버페이',card:'카드'};btn.disabled=true;btn.textContent=names[state.pay]+' 결제 중...';setTimeout(()=>{btn.disabled=false;btn.textContent='결제하고 사주보기';goTo('pg4');showResult();},1200);}
+async function pay(){
+  const user = await requireLogin();
+  if(!user) return;
+  const btn=document.getElementById('pay-btn');
+  const names={kakao:'카카오페이',toss:'토스페이',naver:'네이버페이',card:'카드'};
+  btn.disabled=true;btn.textContent=names[state.pay]+' 결제 중...';
+  setTimeout(()=>{btn.disabled=false;btn.textContent='결제하고 사주보기';goTo('pg4');showResult();},1200);
+}
 
 /* ════════ 결과 ════════ */
 async function showResult(){
   document.getElementById('loading').style.display='block';
   document.getElementById('result').style.display='none';
+  await sleep(1800);
+  document.getElementById('loading').style.display='none';
+  document.getElementById('result').style.display='block';
   const s=state.saju;
-  // 결과 헤더/사주표 미리 채워두기 (화면엔 아직 안 보임)
-  document.getElementById('r-badge').textContent=state.pkg.name+(state.readingType==='종합'?' 종합 사주':' 연애·결혼 사주');
+  document.getElementById('r-badge').textContent=state.pkg.name+' 연애·결혼 사주';
   document.getElementById('r-name').textContent=state.name+'님의 인연';
   const tl=s.hasTime?'':' · 時 미상';
   document.getElementById('r-info').textContent=`${state.year}. ${String(state.month).padStart(2,'0')}. ${String(state.day).padStart(2,'0')} (${state.cal}력) · ${state.gender}성${tl}`;
@@ -606,11 +747,7 @@ async function showResult(){
   document.getElementById('r-dm').className='dm-char '+EL_CLS[GAN_EL[s.dayGan]];
   document.getElementById('r-dm-t').textContent=dm[0];
   document.getElementById('r-dm-d').textContent=dm[1];
-  // 모든 풀이를 다 만든 뒤 한꺼번에 공개
-  await runAI(s);
-  document.getElementById('loading').style.display='none';
-  document.getElementById('result').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
+  runAI(s);
 }
 
 function buildContext(s){
@@ -632,92 +769,88 @@ ${pdesc}
 async function runAI(s){
   const ctx=buildContext(s);
   const nm=state.name;
-  const persp=state.readingType==='종합'?'인생 전반(성격·직업·재물·건강·운세) 관점에서':'연애·결혼 관점에서';
-  const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래는 정확히 계산된 ${nm}님의 사주 데이터입니다. 이 실제 데이터(일간·십성·신살·대운·세운)를 반드시 근거로 인용하며 ${persp} 풀이하세요.
+
+  let secsCount = 7;
+  if(state.pkg.name==='프리미엄') secsCount = 10;
+  if(state.pkg.name==='VIP') secsCount = 14;
+
+  const prompt=`당신은 한국 정통 명리학 대가 "월하 선생"입니다.
+아래는 정확히 계산된 ${nm}님의 사주 데이터입니다. 이 실제 데이터(일간·십성·신살·대운·세운)를 반드시 근거로 인용하며 연애·결혼 관점에서 풀이하세요.
 
 ${ctx}
 
+[상품 단계]
+${state.pkg.name} 리포트
+
 [작성 규칙 — 매우 중요]
 - "${nm}님"이라고 부를 것
-- 위 사주의 실제 글자를 반드시 인용: "${s.dayGan} 일간", "일지 ${s.dayZhi}", 특정 십성, 신살, 대운·세운 간지와 구체적 연도. 막연한 일반론은 절대 금지.
-- 단, 명리 전문용어(편인·겁재·상관·식신·정재·도화살·역마살·장성살 등)는 처음 나올 때 반드시 괄호로 쉬운 우리말 설명을 붙일 것. 예: "편인(생각이 깊고 혼자 분석하는 성향)", "도화살(이성에게 인기 있고 매력을 끄는 기운)", "겁재(경쟁심과 자기 주장이 강한 기운)". 한자 단독 사용 금지, 전문가가 아닌 일반인도 이해하게 쓸 것.
-- 추상적 점괘가 아니라, 일상의 구체적 장면으로 묘사할 것. (예: "연락이 늦으면 혼자 수십 가지 가설을 세운다", "첫 데이트에서 영수증을 꼼꼼히 챙기는 사람을 주목하라")
-- 분량은 길고 풍부하게. 최소 700자, 가능하면 900자 이상. 절대 짧게 끝내지 말 것.
-- 문단을 3~5개로 충분히 나누고, 각 문단도 길게.
-- 핵심 키워드는 <strong>볼드</strong>.
-- 신비롭되 현실적이고 단정적인 문체.
-- 아래 지정한 항목 1개만, HTML 본문(<p>,<h4>,<table>,<div class="quote">)으로 출력. <h3> 제목은 쓰지 말 것.`;
+- 실제 사주 글자를 반드시 인용: "${s.dayGan} 일간", "일지 ${s.dayZhi}", 특정 십성, 신살, 대운·세운 간지와 구체적 연도
+- 추상적 점괘 금지. 일상의 구체적 장면으로 묘사
+- HTML 본문으로만 출력. 마크다운 금지. 코드블록 금지
+- 각 장은 <h3>제목</h3>, <p>본문</p>, 필요 시 <h4>, <table>, <div class="quote"> 사용
+- 사주 전문용어를 쓰되, 바로 뒤에 현실적 해석을 붙일 것
+- 각 장은 최소 450자 이상
+- 전체 리포트를 딱 한 번의 응답으로 끝까지 작성
 
-  const baseSecs=[
-    {icon:'💗',title:'나의 연애 DNA — 사랑하는 방식',ask:`${nm}님이 사랑에 빠지고 표현하는 방식, 연애 초반·중반·권태기 각각의 행동 패턴을 일간 ${s.dayGan}과 십성·신살로 구체적으로. 일상의 장면을 예로 들 것. 800자 이상 4문단.`},
-    {icon:'✨',title:'타고난 매력 자본',ask:`${nm}님이 타인에게 주는 매력·첫인상, 사람들이 어떤 점에 끌리는지, SNS나 모임에서의 모습까지 십성·오행으로 구체적으로. 700자 이상 3문단.`},
-    {icon:'🔥',title:`본능적으로 끌리는 '치명적 인연'`,ask:`${nm}님이 본능적으로 강하게 끌리지만 위험할 수 있는 상대 유형을, 일지 ${s.dayZhi}와 신살(도화·장성 등)을 근거로. 첫 만남에서 확 끌리는 순간, 빠졌을 때의 위험, 자기 점검법까지. 800자 이상 3문단.`},
-    {icon:'🤍',title:`실제 안정을 줄 '진짜 배우자상'`,ask:`${nm}님에게 실질적 안정·발전을 줄 배우자의 성향과 직업·생활 패턴을, 용신과 오행 보완 관점으로. 첫 데이트에서 그 사람을 알아보는 구체적 신호(행동 예시)까지. 800자 이상 3문단.`},
-    {icon:'🌀',title:'연애에서 반복되는 약점과 탈출법',ask:`${nm}님이 연애에서 반복하는 약점을 십성·신살로 진단(구체적 장면 예시 포함)하고, 그 패턴을 깨는 실생활 행동 처방을 제시. 800자 이상 3문단.`},
-    {icon:'⏰',title:'결혼 골든타임',ask:`향후 세운·대운을 근거로 결혼·인연이 가장 잘 풀리는 시기 TOP3를 <table>(컬럼: 순위/시기 년·월/세운 간지와 일주의 관계/만나는 인연 특징)로 만들고, 표 아래 각 순위를 3문단으로 깊게 해설. 실제 세운 간지와 월을 인용. 총 800자 이상.`},
-    {icon:'🌙',title:'한 줄의 운명적 조언',ask:`${nm}님 사주를 관통하는 연애·결혼 핵심 조언을 <div class="quote">한 줄</div>로 먼저 제시하고, 그 아래 그 조언의 사주적 근거와 따뜻한 당부를 3문단으로. 600자 이상.`},
-  ];
-  const premiumSecs=[
-    {icon:'⚖️',title:'결혼, 해야 할까 말아야 할까',ask:`${nm}님에게 결혼이 '인생의 확장'이 되는 경우와 '구속'이 되는 경우를 <table>(컬럼: 항목/확장이 되는 이유/구속이 될 수 있는 이유)로 심리적 안정·경제적 변화·관계 3행 비교. 표 아래 결론을 3문단으로 깊게. 십성 근거 필수. 총 800자 이상.`},
-    {icon:'💞',title:`연애 상대를 알아보는 '실전 체크리스트'`,ask:`${nm}님에게 좋은 인연인지 첫 만남~3개월 안에 확인할 실전 체크포인트 5가지를 번호 문단으로, 각 항목마다 사주 근거와 구체적 행동 예시. 700자 이상.`},
-    {icon:'🗺️',title:'대운 전환기와 인연 리스크',ask:`현재 대운과 다음 대운 전환기에 ${nm}님 연애·결혼에 생길 변화·리스크를, 실제 대운 간지와 구체적 연도(예: 2028~2031년)로. 전환기에 흔들리는 심리와 안전하게 넘기는 법까지. 800자 이상 3문단.`},
-  ];
-  const vipSecs=[
-    {icon:'📅',title:'나이대별 결혼 시나리오 (지금 vs 2년 후 vs 5년 후)',ask:`결혼 시점을 지금(A안)/2년 후(B안)/5년 후(C안)로 나눠 <table>(컬럼: 시나리오/예상 시기/그때의 대운·세운 환경/예상 배우자상)로 비교. 실제 대운·세운 간지 인용. 표 아래 어느 시나리오가 유리한지 근거와 함께 3문단 결론. 총 900자 이상.`},
-    {icon:'🧿',title:`사주 속 숨은 이혼수와 '액땜' 비법`,ask:`${nm}님 사주에 갈등·이별 위험이 드러나는 지점을 십성·신살(상관·겁재·도화 등)로 짚고(구체적 장면 예시), 이를 예방할 현대적 액땜 솔루션 3가지를 번호 문단으로 상세히. 800자 이상.`},
-    {icon:'👶',title:'자녀운과 결혼 후 가정의 미래',ask:`시주·식상으로 본 ${nm}님의 자녀운, 결혼 후 가정 분위기, 배우자와의 역할 균형을 구체적으로. 700자 이상 3문단.`},
-    {icon:'♾️',title:'평생 인연 대운 흐름',ask:`${nm}님의 대운을 따라 연애·결혼운이 인생 전체에서 어떻게 흐르는지, 어느 대운에 인연이 강해지고 약해지는지 실제 대운 간지와 나이대로 조망. 800자 이상 3문단.`},
-  ];
+[반드시 포함할 장]
+1. 💗 나의 연애 DNA — 사랑하는 방식
+2. ✨ 타고난 매력 자본
+3. 🔥 본능적으로 끌리는 치명적 인연
+4. 🤍 실제 안정을 줄 진짜 배우자상
+5. 🌀 연애에서 반복되는 약점과 탈출법
+6. ⏰ 결혼 골든타임 — 표 포함
+7. 🌙 한 줄의 운명적 조언
 
-  // 종합 사주 항목 세트
-  const generalSecs=[
-    {icon:'☯',title:'사주 총론 — 타고난 그릇',ask:`${nm}님의 사주 전체 구성과 일간 ${s.dayGan}을 바탕으로 타고난 기질과 인생의 큰 그릇을 총평. 800자 이상 3문단.`},
-    {icon:'🎭',title:'성격과 본성',ask:`${nm}님의 겉으로 드러나는 성격과 속마음, 장점과 단점을 일간·오행으로 구체적으로. 일상 장면 예시 포함. 800자 이상 3문단.`},
-    {icon:'💼',title:'직업과 적성',ask:`${nm}님에게 가장 잘 맞는 직업·진로 방향과 일하는 스타일, 피해야 할 분야를 십성·오행으로. 800자 이상 3문단.`},
-    {icon:'💰',title:'재물운',ask:`${nm}님의 평생 재물의 흐름, 돈 버는 방식, 재물이 들어오는 시기를 재성과 대운으로. 700자 이상 3문단.`},
-    {icon:'🌿',title:'건강운',ask:`${nm}님의 타고난 체질과 약한 부분, 평생 관리해야 할 건강 포인트를 오행 균형으로. 600자 이상 2문단.`},
-    {icon:'🤝',title:'대인관계와 인복',ask:`${nm}님의 사람 사귀는 스타일, 어떤 사람이 도움이 되는지(귀인), 조심할 인연을 구체적으로. 700자 이상 3문단.`},
-    {icon:'🌟',title:'2025~2026년 운세',ask:`향후 세운·대운을 근거로 ${nm}님의 올해와 내년 운세 흐름, 좋은 시기와 조심할 시기를 실제 간지와 월로. 800자 이상 3문단.`},
-    {icon:'🕯️',title:'인생 종합 조언',ask:`${nm}님 사주 전체를 관통하는 인생 핵심 조언을 <div class="quote">한 줄</div>로 먼저, 그 아래 사주적 근거와 따뜻한 당부 3문단. 600자 이상.`},
-  ];
+${state.pkg.name==='프리미엄'||state.pkg.name==='VIP' ? `
+[프리미엄 이상 추가 장]
+8. ⚖️ 결혼, 해야 할까 말아야 할까 — 표 포함
+9. 💞 연애 상대를 알아보는 실전 체크리스트
+10. 🗺️ 대운 전환기와 인연 리스크
+` : ''}
 
-  let secs;
-  if(state.readingType==='종합'){
-    // 종합: 기본 8개 / 프리미엄·VIP는 연애 항목 일부 추가
-    secs=generalSecs.slice();
-    if(state.pkg.name==='프리미엄')secs=[...generalSecs,baseSecs[0],baseSecs[3]];
-    if(state.pkg.name==='VIP')secs=[...generalSecs,baseSecs[0],baseSecs[3],baseSecs[5],vipSecs[3]];
+${state.pkg.name==='VIP' ? `
+[VIP 추가 장]
+11. 📅 나이대별 결혼 시나리오 — 지금 vs 2년 후 vs 5년 후 표 포함
+12. 🧿 사주 속 숨은 이혼수와 액땜 비법
+13. 👶 자녀운과 결혼 후 가정의 미래
+14. ♾️ 평생 인연 대운 흐름
+` : ''}
+
+마지막에는 <div class="quote"> 형태로 전체 결론 한 줄을 넣으세요.`;
+
+  const body=document.getElementById('ai-body');
+  const prog=document.getElementById('ai-prog');
+  body.innerHTML='';
+  prog.textContent='AI 풀이 작성 중…';
+
+  const block=document.createElement('div');
+  block.innerHTML=`<p class="sec-load">월하 선생이 ${secsCount}개 장 전체를 한 번에 작성하고 있습니다. 보통 15~40초 정도 걸립니다…</p>`;
+  body.appendChild(block);
+
+  const txt = await fetchAI(prompt,1);
+
+  if(txt){
+    body.innerHTML = txt;
+    prog.textContent='풀이 완료';
   }else{
-    secs=baseSecs.slice();
-    if(state.pkg.name==='프리미엄')secs=[...baseSecs.slice(0,6),...premiumSecs,baseSecs[6]];
-    if(state.pkg.name==='VIP')secs=[...baseSecs.slice(0,6),...premiumSecs,...vipSecs,baseSecs[6]];
+    prog.textContent='AI 연결 실패';
+    body.innerHTML = `
+      <div style="background:rgba(176,70,104,.12);border:1px solid var(--rose);border-radius:4px;padding:16px 18px;margin-bottom:20px;font-size:13px;line-height:1.8;color:var(--cream2)">
+        <strong style="color:var(--rose2)">⚠ AI 풀이 연결 실패</strong><br>
+        서버에서 풀이를 받지 못했습니다.<br>
+        <span style="color:var(--cream3);font-size:12px">원인: ${AI_LAST_ERR||'알 수 없음'}</span><br>
+        <span style="color:var(--cream3);font-size:12px">Vercel 로그와 ANTHROPIC_API_KEY 환경변수를 확인해주세요.</span>
+      </div>
+      ${fallback({title:'전체 리포트'},s)}
+    `;
   }
 
-  const body=document.getElementById('ai-body');body.innerHTML='';
-  const prog=document.getElementById('load-prog');
-
-  // 첫 호출로 AI 연결 상태 점검
-  if(prog)prog.textContent='연결 확인 중…';
-  const probe=await fetchAI(common+'\n\n[이번 항목] '+secs[0].title+'\n'+secs[0].ask,2);
-  if(!probe){
-    const banner=document.createElement('div');
-    banner.style.cssText='background:rgba(176,70,104,.12);border:1px solid var(--rose);border-radius:4px;padding:16px 18px;margin-bottom:20px;font-size:13px;line-height:1.8;color:var(--cream2)';
-    banner.innerHTML=`<strong style="color:var(--rose2)">⚠ AI 풀이 연결 실패</strong><br>서버에서 풀이를 받지 못했습니다.<br><span style="color:var(--cream3);font-size:12px">원인: ${AI_LAST_ERR||'알 수 없음'}</span><br><span style="color:var(--cream3);font-size:12px">Vercel 환경변수(ANTHROPIC_API_KEY) 설정을 확인하세요. 아래는 기본 풀이입니다.</span>`;
-    body.appendChild(banner);
-  }
-
-  for(let i=0;i<secs.length;i++){
-    const sec=secs[i];
-    if(prog)prog.textContent=`풀이 작성 중 · ${i+1} / ${secs.length}`;
-    const txt = (i===0 && probe) ? probe : await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,2);
-    const block=document.createElement('div');
-    block.innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||fallback(sec,s)}`;
-    body.appendChild(block);
-  }
   const outro=document.createElement('div');
   outro.style.cssText="margin-top:26px;padding-top:18px;border-top:1px solid var(--border2);text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--cream3)";
   outro.textContent='― 月下 月下緣 ―';
   body.appendChild(outro);
+  lastAIHtml=body.innerHTML;
+  await saveResultToSupabase(lastAIHtml);
 }
 
 let AI_LAST_ERR='';
@@ -748,194 +881,10 @@ function fallback(sec,s){
 }
 
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-/* ════════ 궁합 시스템 ════════ */
-let gState={A:{gender:''},B:{gender:''},pay:''};
-function gSetGender(who,g){
-  gState[who].gender=g;
-  const row=document.querySelectorAll(`#g${who}-name`)[0].closest('.field-row');
-  row.querySelectorAll('.seg-opt').forEach(e=>e.classList.toggle('on',e.textContent===g));
-}
-function gComputeOne(who){
-  const y=parseInt(document.getElementById(`g${who}-year`).value);
-  const m=parseInt(document.getElementById(`g${who}-month`).value);
-  const d=parseInt(document.getElementById(`g${who}-day`).value);
-  const cal=document.getElementById(`g${who}-cal`).value;
-  const name=document.getElementById(`g${who}-name`).value.trim();
-  const gender=gState[who].gender;
-  if(!name||!gender||!(y>=1920&&y<=2012)||!m||!d)return null;
-  if(!LUNAR_OK)return null;
-  try{
-    let solar;
-    if(cal==='음'){solar=Lunar.fromYmdHms(y,m,d,12,0,0).getSolar();}
-    else{solar=Solar.fromYmdHms(y,m,d,12,0,0);}
-    const ec=solar.getLunar().getEightChar();
-    const P=[
-      {lbl:'연',gan:ec.getYearGan(),zhi:ec.getYearZhi()},
-      {lbl:'월',gan:ec.getMonthGan(),zhi:ec.getMonthZhi()},
-      {lbl:'일',gan:ec.getDayGan(),zhi:ec.getDayZhi()},
-    ];
-    const oc={木:0,火:0,土:0,金:0,水:0};
-    P.forEach(p=>{oc[GAN_EL[p.gan]]++;oc[ZHI_EL[p.zhi]]++;});
-    return {name,gender,y,m,d,cal,P,dayGan:ec.getDayGan(),dayZhi:ec.getDayZhi(),yearZhi:ec.getYearZhi(),oc};
-  }catch(e){return null;}
-}
-function gToPay(){
-  const w=document.getElementById('gWarn');
-  const A=gComputeOne('A'),B=gComputeOne('B');
-  if(!A||!B){w.textContent='✦ 두 사람의 정보를 모두 정확히 입력해주세요.';w.style.display='block';return;}
-  w.style.display='none';
-  gState.A2=A;gState.B2=B;
-  document.getElementById('gPayWho').textContent=`${A.name} ♥ ${B.name}`;
-  goTo('pgGpay');
-}
-function gSelPay(el,m){gState.pay=m;document.querySelectorAll('#pgGpay .pay').forEach(e=>e.classList.remove('on'));el.classList.add('on');document.getElementById('gPayBtn').disabled=false;}
-function gPay(){const b=document.getElementById('gPayBtn');b.disabled=true;b.textContent='결제 중...';setTimeout(()=>{b.disabled=false;b.textContent='결제하고 궁합보기';goTo('pgGres');gShowResult();},1200);}
-
-function gPillarMini(person){
-  return `<div style="background:rgba(200,164,90,.04);border:1px solid var(--border2);border-radius:4px;padding:14px">
-    <div style="font-size:12px;color:var(--gold);margin-bottom:10px;text-align:center">${esc(person.name)} (${person.gender})</div>
-    <div style="display:flex;justify-content:center;gap:6px">
-    ${person.P.map(p=>`<div style="text-align:center"><div style="font-size:8px;color:var(--cream3)">${p.lbl}</div><div class="${EL_CLS[GAN_EL[p.gan]]}" style="font-family:'Noto Serif KR',serif;font-size:18px">${p.gan}</div><div class="${EL_CLS[ZHI_EL[p.zhi]]}" style="font-family:'Noto Serif KR',serif;font-size:18px">${p.zhi}</div></div>`).join('')}
-    </div>
-    <div style="font-size:10px;color:var(--cream3);text-align:center;margin-top:8px">${DM_DESC[person.dayGan][0]}</div>
-  </div>`;
-}
-async function gShowResult(){
-  document.getElementById('gLoading').style.display='block';
-  document.getElementById('gResult').style.display='none';
-  await sleep(1800);
-  document.getElementById('gLoading').style.display='none';
-  document.getElementById('gResult').style.display='block';
-  const A=gState.A2,B=gState.B2;
-  document.getElementById('gResName').textContent=`${A.name} ♥ ${B.name}`;
-  document.getElementById('gResInfo').textContent=`${A.y}.${A.m}.${A.d} · ${B.y}.${B.m}.${B.d}`;
-  document.getElementById('gPairView').innerHTML=gPillarMini(A)+gPillarMini(B);
-  gRunAI(A,B);
-}
-function gCtx(p){
-  const pd=p.P.map(x=>`${x.lbl}주 ${x.gan}${x.zhi}(${GAN_KR[x.gan]}${ZHI_KR[x.zhi]})`).join(' ');
-  const oc=Object.entries(p.oc).filter(([k,v])=>v>0).map(([k,v])=>`${EL_KR[k]}${v}`).join(' ');
-  return `${p.name}(${p.gender}, ${p.y}.${p.m}.${p.d}): 일간 ${p.dayGan}(${GAN_KR[p.dayGan]}), 사주 ${pd}, 오행 ${oc}`;
-}
-async function gRunAI(A,B){
-  const ctx=`[첫 번째] ${gCtx(A)}\n[두 번째] ${gCtx(B)}`;
-  const common=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 두 사람의 정확히 계산된 사주로 궁합을 봅니다. 실제 일간·오행·지지의 상생상극·합충을 근거로 인용하며 풀이하세요.
-
-${ctx}
-
-[규칙]
-- 두 사람 이름(${A.name}, ${B.name})을 직접 부를 것
-- 실제 사주 글자(일간, 지지, 오행)를 콕 집어 근거로 들 것. 일반론 금지.
-- 일상의 구체적 장면으로 묘사. 700자 이상.
-- 핵심은 <strong>볼드</strong>. <p>,<h4>,<table>,<div class="quote">만 사용. <h3> 금지.`;
-  const secs=[
-    {icon:'💞',title:'두 사람의 첫인상과 끌림',ask:`두 일간(${A.dayGan}·${B.dayGan})의 관계로 본 서로에게 느끼는 끌림과 첫인상. 어떤 점에 반하는지.`},
-    {icon:'🔥',title:'궁합 점수와 핵심 케미',ask:`두 사주의 오행 상생상극·일지 관계로 종합 궁합 점수(100점 만점)를 먼저 <div class="quote">○○점</div>으로 제시하고, 그 근거와 핵심 케미를 설명.`},
-    {icon:'💬',title:'연애할 때의 모습',ask:`두 사람이 사귈 때 펼쳐지는 일상, 데이트 스타일, 표현 방식의 궁합. 구체적 장면으로.`},
-    {icon:'⚡',title:'갈등 포인트와 해결법',ask:`두 사주가 부딪히는 지점(오행 충돌·성향 차이)을 구체적으로 짚고, 극복하는 현실적 방법.`},
-    {icon:'💍',title:'결혼 궁합과 미래',ask:`결혼했을 때의 궁합, 경제·가정 운영, 장기적 관계 전망을 종합. 마지막에 <div class="quote">두 사람을 위한 한 줄 조언</div>.`},
-  ];
-  const body=document.getElementById('gAiBody');body.innerHTML='';
-  const prog=document.getElementById('gAiProg');
-  prog.textContent='AI 연결 확인 중…';
-  const probe=await fetchAI(common+'\n\n[이번 항목] '+secs[0].title+'\n'+secs[0].ask,2);
-  if(!probe){
-    const banner=document.createElement('div');
-    banner.style.cssText='background:rgba(176,70,104,.12);border:1px solid var(--rose);border-radius:4px;padding:16px 18px;margin-bottom:20px;font-size:13px;line-height:1.8;color:var(--cream2)';
-    banner.innerHTML=`<strong style="color:var(--rose2)">⚠ AI 풀이 연결 실패</strong><br><span style="color:var(--cream3);font-size:12px">원인: ${AI_LAST_ERR||'알 수 없음'}</span>`;
-    body.appendChild(banner);
-  }
-  for(let i=0;i<secs.length;i++){
-    const sec=secs[i];
-    prog.textContent=`풀이 중 · ${i+1} / ${secs.length}`;
-    const block=document.createElement('div');
-    block.innerHTML=`<h3>${sec.icon} ${sec.title}</h3><p class="sec-load">인연을 맞춰보는 중…</p>`;
-    body.appendChild(block);
-    const txt=(i===0&&probe)?probe:await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,2);
-    block.innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||`<p>${esc(A.name)}님과 ${esc(B.name)}님은 서로 다른 기운을 지녀 보완적인 인연입니다.</p>`}`;
-  }
-  prog.textContent='풀이 완료';
-}
-
 function goTo(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 
 // 라이브러리 로드 확인
-/* ════════ 후기 시스템 ════════ */
-// 예시 후기 (모두 5★)
-const SEED_REVIEWS=[
-  {n:'이*은',s:5,d:'2025.05',t:'배우자상 설명이 지금 만나는 사람이랑 똑같아서 소름. 결혼 골든타임도 구체적으로 알려줘서 좋았어요.'},
-  {n:'최*아',s:5,d:'2025.05',t:'연애할 때 제 약점을 정확히 짚어줘서 놀랐어요. "혼자 분석하다 지친다"는 말에 울컥했네요.'},
-  {n:'박*현',s:5,d:'2025.04',t:'치명적 인연 부분 보고 소름 돋았어요. 진짜 제가 끌리는 스타일 그대로였어요.'},
-  {n:'정*우',s:5,d:'2025.04',t:'생각보다 길고 자세해서 만족. 십성 신살 설명까지 나와서 진짜 같았어요.'},
-  {n:'김*지',s:5,d:'2025.04',t:'결혼 시나리오 표가 제일 좋았어요. 2년 후 vs 지금 비교가 현실적이라 도움됐어요.'},
-  {n:'한*름',s:5,d:'2025.03',t:'다른 사주 사이트보다 훨씬 구체적이에요. 그냥 좋은 말만 하는 게 아니라 약점도 콕 집어줘요.'},
-  {n:'오*희',s:5,d:'2025.03',t:'재미로 봤는데 연애 패턴이 너무 맞아서 친구한테도 추천했어요.'},
-  {n:'서*나',s:5,d:'2025.03',t:'운명적 조언 한 줄이 진짜 마음에 남아요. 캡처해서 저장해뒀어요.'},
-  {n:'유*경',s:5,d:'2025.02',t:'대운 흐름까지 봐주니까 신뢰가 가요. 결혼 골든타임 시기 메모해뒀습니다.'},
-  {n:'강*비',s:5,d:'2025.02',t:'가격도 합리적이고 내용도 알차요. 연애운 궁금한 사람한테 강추!'},
-];
-const REVIEW_BASE_COUNT=2847; // 누적 후기 수(표시용)
-let userReviews=[];
-function loadReviews(){
-  try{const raw=window.__reviews;if(Array.isArray(raw))userReviews=raw;}catch(e){}
-  renderReviews();
-}
-function renderReviews(){
-  const all=[...userReviews,...SEED_REVIEWS].filter(r=>r.s>=4); // 4점 이상만 노출
-  const box=document.getElementById('reviews');
-  if(!box)return;
-  box.innerHTML=all.map(r=>`<div class="review"><div class="review-head"><span class="review-stars">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</span><span class="review-name">${esc(maskName(r.n))}</span><span class="review-date">${esc(r.d)}</span></div><div class="review-text">${esc(r.t)}</div></div>`).join('');
-  const total=REVIEW_BASE_COUNT+userReviews.filter(r=>r.s>=4).length;
-  const el=document.getElementById('review-avg');if(el)el.textContent=`★ 4.9 · ${total.toLocaleString()}개`;
-}
-// 이름 중간 글자 가리기 (예: 홍길동 → 홍*동, 김희 → 김*)
-function maskName(name){
-  const n=String(name).trim();
-  if(n.includes('*'))return n; // 이미 가려진 경우
-  if(n.length<=1)return n+'*';
-  if(n.length===2)return n[0]+'*';
-  return n[0]+'*'.repeat(n.length-2)+n[n.length-1];
-}
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
-let pickedStar=5;
-function openReview(){
-  document.getElementById('review-modal').style.display='flex';
-  pickedStar=5;paintStars();
-}
-function closeReview(){document.getElementById('review-modal').style.display='none';}
-function paintStars(){
-  document.querySelectorAll('#star-pick span').forEach(s=>{
-    s.style.color=(parseInt(s.dataset.v)<=pickedStar)?'var(--gold)':'var(--cream3)';
-  });
-}
-function submitReview(){
-  const name=document.getElementById('rv-name').value.trim();
-  const text=document.getElementById('rv-text').value.trim();
-  const w=document.getElementById('rv-warn');
-  if(!name||!text){w.textContent='닉네임과 후기 내용을 모두 입력해주세요.';w.style.display='block';return;}
-  w.style.display='none';
-  const today=new Date();
-  const d=`${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}`;
-  userReviews.unshift({n:name,s:pickedStar,d,t:text});
-  closeReview();
-  document.getElementById('rv-name').value='';
-  document.getElementById('rv-text').value='';
-  if(pickedStar>=4){
-    renderReviews();
-  }else{
-    // 4점 미만은 노출 안 됨 — 사용자에겐 등록 완료로 안내
-    alert('소중한 후기 감사합니다! 검토 후 반영됩니다.');
-  }
-}
-
-window.addEventListener('load',()=>{
-  LUNAR_OK=(typeof Solar!=='undefined');
-  loadReviews();
-  document.querySelectorAll('#star-pick span').forEach(s=>{
-    s.addEventListener('click',()=>{pickedStar=parseInt(s.dataset.v);paintStars();});
-  });
-});
+window.addEventListener('load',()=>{LUNAR_OK=(typeof Solar!=='undefined');initAuth();});
 </script>
 </body>
 </html>
