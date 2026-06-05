@@ -452,8 +452,8 @@ let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,
 1) Supabase Project URL과 anon key를 아래에 붙여넣으세요.
 2) Supabase SQL Editor에서 supabase_schema.sql 내용을 실행하세요.
 */
-const SUPABASE_URL = '여기에_SUPABASE_PROJECT_URL';
-const SUPABASE_ANON_KEY = '여기에_SUPABASE_ANON_PUBLIC_KEY';
+const SUPABASE_URL = 'https://tyqhuntiqjdezmzkzrw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_epPzV1eUGM-Boyil4HP38g_4a-rBj3e';
 const sb = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.startsWith('ey'))
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
