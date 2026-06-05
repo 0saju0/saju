@@ -709,22 +709,19 @@ ${ctx}
     return div;
   });
 
-  // 저장/다시보기 버튼 미리 추가
   const outro=document.createElement('div');
   outro.style.cssText='margin-top:24px;padding-top:16px;border-top:1px solid var(--border2);text-align:center;font-family:Cormorant Garamond,serif;font-style:italic;font-size:14px;color:var(--cream3)';
   outro.textContent='― 月下 月下緣 ―';
   body.appendChild(outro);
 
-  // 각 섹션을 완성되는 대로 채우기
-  for(let i=0;i<secs.length;i++){
-    const sec=secs[i];
-    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,2);
+  // 모든 섹션 동시 요청 — 완성되는 순서대로 바로 표시
+  await Promise.all(secs.map(async(sec,i)=>{
+    await sleep(i*300); // 약간씩 엇갈려서 요청 (레이트 리밋 방지)
+    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,1);
     blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||fallback(sec,s)}`;
-    // 첫 섹션 완성되면 저장 버튼 표시
-    if(i===0){
-      document.getElementById('save-btn').style.display=gUser?'flex':'none';
-    }
-  }
+    if(i===0) document.getElementById('save-btn').style.display=gUser?'flex':'none';
+  }));
+
   lastResultHTML=body.innerHTML;
   lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
 }
@@ -846,15 +843,23 @@ ${ctx}
     {icon:'💍',title:'결혼 궁합과 미래',ask:'결혼했을 때 궁합, 장기적 관계 전망. 마지막에 <div class="quote">두 사람을 위한 조언</div>. 700자 이상.'},
   ];
   const body=document.getElementById('gAiBody');body.innerHTML='';
-  const prog=document.getElementById('gLoadProg');if(prog)prog.textContent='연결 확인 중…';
-  const probe=await fetchAI(common+'\n\n[이번 항목] '+secs[0].title+'\n'+secs[0].ask,2);
-  if(!probe){const b=document.createElement('div');b.style.cssText='background:rgba(176,70,104,.12);border:1px solid var(--rose);border-radius:4px;padding:15px;margin-bottom:16px;font-size:13px';b.innerHTML=`<strong style="color:var(--rose2)">⚠ AI 연결 실패</strong><br><span style="color:var(--cream3);font-size:12px">원인: ${AI_LAST_ERR||'알 수 없음'}</span>`;body.appendChild(b);}
-  for(let i=0;i<secs.length;i++){
-    const sec=secs[i];if(prog)prog.textContent=`풀이 중 · ${i+1} / ${secs.length}`;
-    const txt=(i===0&&probe)?probe:await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,2);
-    const block=document.createElement('div');block.innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||`<p>${esc(A.name)}님과 ${esc(B.name)}님의 궁합입니다.</p>`}`;body.appendChild(block);
-  }
-  document.getElementById('gLoading').style.display='none';document.getElementById('gResult').style.display='block';window.scrollTo({top:0,behavior:'smooth'});
+
+  const gBlocks=secs.map(sec=>{
+    const div=document.createElement('div');
+    div.innerHTML=`<h3>${sec.icon} ${sec.title}</h3><p style="color:var(--cream3);opacity:.5;animation:pulse 1.2s infinite">풀이 중입니다…</p>`;
+    body.appendChild(div);
+    return div;
+  });
+
+  await Promise.all(secs.map(async(sec,i)=>{
+    await sleep(i*300);
+    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,1);
+    gBlocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||`<p>${esc(A.name)}님과 ${esc(B.name)}님의 궁합입니다.</p>`}`;
+  }));
+
+  document.getElementById('gLoading').style.display='none';
+  document.getElementById('gResult').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ════ 후기 ════ */
