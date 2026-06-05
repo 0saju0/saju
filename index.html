@@ -285,13 +285,28 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 
 <!-- STEP 1 -->
 <div class="page" id="pg1"><div class="container"><div class="section">
-  <div class="section-title">생년월일 입력</div>
+  <div class="section-title"><button onclick="goTo('pg0')" style="background:none;border:none;color:var(--cream3);cursor:pointer;font-size:13px;padding:0;letter-spacing:0">← 처음으로</button></div>
   <div class="card">
     <div class="card-head"><div class="card-head-title" id="s1-title">기본 정보</div><div class="card-head-step">Step 1 / 3</div></div>
     <div class="card-body">
       <div class="field-row">
         <div class="field"><label class="field-label">이름</label><input class="input" id="i-name" type="text" placeholder="홍길동" oninput="render()"></div>
-        <div class="field"><label class="field-label">성별</label><div class="seg"><div class="seg-opt" onclick="setGender('남')">남성</div><div class="seg-opt" onclick="setGender('여')">여성</div></div></div>
+        <div class="field"><label class="field-label">성별</label>
+          <div class="seg" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="seg-opt" onclick="setGender('남')">남성</div>
+            <div class="seg-opt" onclick="setGender('여')">여성</div>
+            <div class="seg-opt" onclick="setGender('기타')">기타</div>
+          </div>
+        </div>
+      </div>
+      <!-- 기타 선택 시 대운 계산 기준 -->
+      <div class="field" id="daewoon-opt" style="display:none">
+        <label class="field-label">대운 계산 기준 <span style="color:var(--cream3);font-weight:300">(사주 계산에만 사용돼요)</span></label>
+        <div class="seg">
+          <div class="seg-opt on" id="dw-yang" onclick="setDaewoon('양')">양(陽) 기준</div>
+          <div class="seg-opt" id="dw-eum" onclick="setDaewoon('음')">음(陰) 기준</div>
+        </div>
+        <div style="font-size:11px;color:var(--cream3);margin-top:7px;line-height:1.6">양 = 일반적으로 남성 대운 방향 · 음 = 일반적으로 여성 대운 방향</div>
       </div>
       <div class="field"><label class="field-label">역법</label><div class="tabs"><div class="tab on" id="tab-y" onclick="setCal('양')">양력</div><div class="tab" id="tab-e" onclick="setCal('음')">음력</div></div></div>
       <div class="field"><label class="field-label">현재 연애 상태</label>
@@ -322,7 +337,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 
 <!-- STEP 2 -->
 <div class="page" id="pg2"><div class="container"><div class="section">
-  <div class="section-title">분석 상품</div>
+  <div class="section-title"><button onclick="goTo('pg1')" style="background:none;border:none;color:var(--cream3);cursor:pointer;font-size:13px;padding:0;letter-spacing:0">← 이전</button></div>
   <div class="card">
     <div class="card-head"><div class="card-head-title" id="pkg-title">사주 풀이</div><div class="card-head-step">Step 2 / 3</div></div>
     <div class="card-body">
@@ -350,7 +365,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 
 <!-- STEP 3 -->
 <div class="page" id="pg3"><div class="container"><div class="section">
-  <div class="section-title">결제</div>
+  <div class="section-title"><button onclick="goTo('pg2')" style="background:none;border:none;color:var(--cream3);cursor:pointer;font-size:13px;padding:0;letter-spacing:0">← 이전</button></div>
   <div class="card">
     <div class="card-head"><div class="card-head-title">주문 확인</div><div class="card-head-step">Step 3 / 3</div></div>
     <div class="card-body">
@@ -546,11 +561,28 @@ const CHEONEUL={甲:'丑未',戊:'丑未',庚:'丑未',乙:'子申',己:'子申'
 function samhapKey(z){for(const k in SAMHAP){if(k.includes(z))return k;}return null;}
 
 let LUNAR_OK=false;
-let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애',relStatus:'솔로'};
+let state={name:'',gender:'',cal:'양',year:null,month:null,day:null,timeIdx:-1,pkg:{i:-1,name:'',price:0},pay:'',saju:null,readingType:'연애',relStatus:'솔로',daewoonBase:'음'};
 
 function startReading(type){state.readingType=type;goTo('pg1');}
 function setRelStatus(el,s){state.relStatus=s;document.querySelectorAll('#rel-status-wrap .seg-opt').forEach(e=>e.classList.toggle('on',e===el));}
-function setGender(g){state.gender=g;document.querySelectorAll('#pg1 .seg-opt').forEach(e=>e.classList.toggle('on',e.textContent===g+'성'));render();}
+function setGender(g){
+  state.gender=g;
+  document.querySelectorAll('#pg1 .seg-opt').forEach(e=>{
+    if(['남성','여성','기타'].includes(e.textContent))
+      e.classList.toggle('on',e.textContent===g+(g==='기타'?'':'성'));
+  });
+  // 기타 선택 시 대운 계산 기준 표시
+  const opt=document.getElementById('daewoon-opt');
+  if(opt)opt.style.display=(g==='기타')?'block':'none';
+  if(g!=='기타')state.daewoonBase=(g==='남'?'양':'음');
+  render();
+}
+function setDaewoon(v){
+  state.daewoonBase=v;
+  document.getElementById('dw-yang').classList.toggle('on',v==='양');
+  document.getElementById('dw-eum').classList.toggle('on',v==='음');
+  render();
+}
 function setCal(c){state.cal=c;document.getElementById('tab-y').classList.toggle('on',c==='양');document.getElementById('tab-e').classList.toggle('on',c==='음');render();}
 
 function computeSaju(){
@@ -578,7 +610,13 @@ function computeSaju(){
     const ce=CHEONEUL[dayGan]||'';
     allZhi.forEach(z=>{if(ce.includes(z.zhi)){sinsal['천을귀인']=sinsal['천을귀인']||[];sinsal['천을귀인'].push(z);}});
     let daewoon=[];
-    try{const yun=ec.getYun(state.gender==='남'?1:0);const arr=yun.getDaYun();for(let i=1;i<arr.length&&i<=9;i++){daewoon.push({age:arr[i].getStartAge(),year:arr[i].getStartYear(),gz:arr[i].getGanZhi()});}}catch(e){}
+    try{
+      // 기타일 때는 daewoonBase로 결정, 아니면 성별로
+      const genderForDaewoon=state.gender==='기타'?(state.daewoonBase==='양'?'남':'여'):state.gender;
+      const yun=ec.getYun(genderForDaewoon==='남'?1:0);
+      const arr=yun.getDaYun();
+      for(let i=1;i<arr.length&&i<=9;i++){daewoon.push({age:arr[i].getStartAge(),year:arr[i].getStartYear(),gz:arr[i].getGanZhi()});}
+    }catch(e){}
     const nowY=new Date().getFullYear();
     const saewoon=[];
     for(let yy=nowY;yy<=nowY+6;yy++){const gi=(yy-4)%10,zi=(yy-4)%12;saewoon.push({year:yy,gz:GAN[(gi+10)%10]+ZHI[(zi+12)%12]});}
@@ -609,6 +647,7 @@ function toStep2(){
   const w=document.getElementById('warn1');let msg='';
   if(!state.name.trim())msg='이름을 입력해주세요.';
   else if(!state.gender)msg='성별을 선택해주세요.';
+  else if(state.gender==='기타'&&!state.daewoonBase)msg='대운 계산 기준을 선택해주세요.';
   else if(!state.year||!state.month||!state.day)msg='생년월일을 모두 입력해주세요.';
   else if(!LUNAR_OK)msg='만세력 모듈을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.';
   else if(!state.saju)msg='날짜를 다시 확인해주세요.';
@@ -1026,7 +1065,17 @@ function goTo(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='pgMy')loadMyList();
+  history.pushState({page:id},'','#'+id);
 }
+
+window.addEventListener('popstate',(e)=>{
+  const id=(e.state&&e.state.page)||'pg0';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById(id);
+  if(target)target.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='pgMy')loadMyList();
+});
 function showToast(msg){
   const t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(200,164,90,.95);color:#1a1228;padding:12px 22px;border-radius:4px;font-size:13px;font-weight:500;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.3);letter-spacing:.5px;white-space:nowrap';
