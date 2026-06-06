@@ -1149,35 +1149,9 @@ function triggerKakaoLogin(){
       }));
     }catch(e){}
   }
-  if(typeof Kakao==='undefined'){alert('카카오 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;}
-  try{
-    if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);
-    // 팝업 방식 (모바일에서 막힐 수 있으면 리다이렉트로 자동 전환)
-    Kakao.Auth.login({
-      success(auth){
-        Kakao.API.request({
-          url:'/v2/user/me',
-          success(res){
-            const profile=res.kakao_account?.profile||{};
-            gUser={
-              sub:'kakao_'+res.id,
-              name:profile.nickname||'카카오유저',
-              email:res.kakao_account?.email||'',
-              picture:profile.profile_image_url||''
-            };
-            try{localStorage.setItem('saju_guser',JSON.stringify(gUser));}catch(e){}
-            updateLoginUI();
-            restoreAndSave();
-          },
-          fail(){alert('카카오 정보 불러오기 실패');}
-        });
-      },
-      fail(e){
-        // 팝업 실패 시 리다이렉트 방식으로 전환
-        Kakao.Auth.authorize({redirectUri:location.origin+location.pathname});
-      }
-    });
-  }catch(e){alert('카카오 로그인 오류: '+e.message);}
+  // 카카오 OAuth 직접 이동 (팝업 없음 - iOS 완벽 호환)
+  const redirectUri=encodeURIComponent(location.origin+location.pathname);
+  location.href=`https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_JS_KEY}&redirect_uri=${redirectUri}&response_type=token`;
 }
 function triggerGLogin(){
   if(typeof google==='undefined'){
@@ -1443,7 +1417,29 @@ window.addEventListener('load',()=>{
     try{Kakao.init(KAKAO_JS_KEY);}catch(e){}
   }
 
-  // ④ sessionStorage 복원 대기 (로그인 후 돌아온 경우)
+  // ⑤ 카카오 로그인 후 토큰 처리
+  const hashParams=new URLSearchParams(location.hash.replace('#',''));
+  const kakaoToken=hashParams.get('access_token');
+  if(kakaoToken){
+    // 토큰으로 사용자 정보 가져오기
+    history.replaceState(null,'',location.pathname); // URL에서 토큰 제거
+    fetch('https://kapi.kakao.com/v2/user/me',{
+      headers:{Authorization:'Bearer '+kakaoToken}
+    }).then(r=>r.json()).then(res=>{
+      const profile=res.kakao_account?.profile||{};
+      gUser={
+        sub:'kakao_'+res.id,
+        name:profile.nickname||'카카오유저',
+        email:res.kakao_account?.email||'',
+        picture:profile.profile_image_url||''
+      };
+      try{localStorage.setItem('saju_guser',JSON.stringify(gUser));}catch(e){}
+      updateLoginUI();
+      restoreAndSave();
+      showToast('💬 카카오 로그인 완료!');
+    }).catch(()=>{});
+  }
+  // ④ sessionStorage 복원 대기
   if(sessionStorage.getItem('saju_temp_html')&&gUser){
     restoreAndSave();
   }else{
