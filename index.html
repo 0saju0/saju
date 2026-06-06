@@ -6,7 +6,7 @@
 <title>월하연(月下緣) — AI 사주</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1150,28 +1150,34 @@ function triggerKakaoLogin(){
     }catch(e){}
   }
   if(typeof Kakao==='undefined'){alert('카카오 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;}
-  if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);
-  Kakao.Auth.login({
-    success(auth){
-      Kakao.API.request({
-        url:'/v2/user/me',
-        success(res){
-          const profile=res.kakao_account?.profile||{};
-          gUser={
-            sub:'kakao_'+res.id,
-            name:profile.nickname||'카카오유저',
-            email:res.kakao_account?.email||'',
-            picture:profile.profile_image_url||''
-          };
-          try{localStorage.setItem('saju_guser',JSON.stringify(gUser));}catch(e){}
-          updateLoginUI();
-          restoreAndSave();
-        },
-        fail(e){alert('카카오 정보 불러오기 실패');}
-      });
-    },
-    fail(e){alert('카카오 로그인 실패: '+e.error_description);}
-  });
+  try{
+    if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);
+    // 팝업 방식 (모바일에서 막힐 수 있으면 리다이렉트로 자동 전환)
+    Kakao.Auth.login({
+      success(auth){
+        Kakao.API.request({
+          url:'/v2/user/me',
+          success(res){
+            const profile=res.kakao_account?.profile||{};
+            gUser={
+              sub:'kakao_'+res.id,
+              name:profile.nickname||'카카오유저',
+              email:res.kakao_account?.email||'',
+              picture:profile.profile_image_url||''
+            };
+            try{localStorage.setItem('saju_guser',JSON.stringify(gUser));}catch(e){}
+            updateLoginUI();
+            restoreAndSave();
+          },
+          fail(){alert('카카오 정보 불러오기 실패');}
+        });
+      },
+      fail(e){
+        // 팝업 실패 시 리다이렉트 방식으로 전환
+        Kakao.Auth.authorize({redirectUri:location.origin+location.pathname});
+      }
+    });
+  }catch(e){alert('카카오 로그인 오류: '+e.message);}
 }
 function triggerGLogin(){
   if(typeof google==='undefined'){
