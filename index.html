@@ -878,24 +878,23 @@ ${ctx}
     });
   }
 
-  // 완료 후 localStorage에 자동 저장 (비로그인 포함 누구나)
+  // 완료 후 sessionStorage(새로고침) + localStorage(로그인저장) 둘 다 저장
   lastResultHTML=body.innerHTML;
   lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
-  try{
-    localStorage.setItem('saju_last',JSON.stringify({
-      html:lastResultHTML,
-      meta:lastResultMeta,
-      badge:document.getElementById('r-badge')?.textContent||'',
-      rname:document.getElementById('r-name')?.textContent||'',
-      info:document.getElementById('r-info')?.textContent||'',
-      pillars:document.getElementById('r-pillars')?.innerHTML||'',
-      sinsal:document.getElementById('r-sinsal')?.innerHTML||'',
-      dm:document.getElementById('r-dm')?.textContent||'',
-      dmT:document.getElementById('r-dm-t')?.textContent||'',
-      dmD:document.getElementById('r-dm-d')?.textContent||'',
-      dmCls:document.getElementById('r-dm')?.className||'',
-    }));
-  }catch(e){}
+  const saveObj={
+    html:lastResultHTML,meta:lastResultMeta,
+    badge:document.getElementById('r-badge')?.textContent||'',
+    rname:document.getElementById('r-name')?.textContent||'',
+    info:document.getElementById('r-info')?.textContent||'',
+    pillars:document.getElementById('r-pillars')?.innerHTML||'',
+    sinsal:document.getElementById('r-sinsal')?.innerHTML||'',
+    dm:document.getElementById('r-dm')?.textContent||'',
+    dmT:document.getElementById('r-dm-t')?.textContent||'',
+    dmD:document.getElementById('r-dm-d')?.textContent||'',
+    dmCls:document.getElementById('r-dm')?.className||'',
+  };
+  try{sessionStorage.setItem('saju_cur_reading',JSON.stringify(saveObj));}catch(e){}
+  try{localStorage.setItem('saju_last',JSON.stringify(saveObj));}catch(e){}
   if(gUser){
     autoSave();
     document.getElementById('save-btn').style.display='none'; // 자동저장이니 버튼 숨김
@@ -1226,13 +1225,12 @@ function showLogout(){
 }
 function restoreLastReading(){
   try{
-    const raw=localStorage.getItem('saju_last');
+    // sessionStorage 먼저 (새로고침), 없으면 localStorage
+    const raw=sessionStorage.getItem('saju_cur_reading')||localStorage.getItem('saju_last');
     if(!raw)return false;
     const d=JSON.parse(raw);
     if(!d||!d.html||d.html.length<100)return false;
-    // DOM 복원
-    lastResultHTML=d.html;
-    lastResultMeta=d.meta||{};
+    lastResultHTML=d.html;lastResultMeta=d.meta||{};
     const set=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.textContent=val;};
     const setH=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.innerHTML=val;};
     set('r-badge',d.badge);set('r-name',d.rname);set('r-info',d.info);
@@ -1243,7 +1241,6 @@ function restoreLastReading(){
     document.getElementById('loading').style.display='none';
     document.getElementById('result').style.display='block';
     document.getElementById('save-btn').style.display=gUser?'none':'flex';
-    // pg4 직접 활성화 (goTo 대신)
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('pg4').classList.add('active');
     return true;
@@ -1267,8 +1264,8 @@ function goTo(id){
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='pgMy')loadMyList();
   history.pushState({page:id},'','#'+id);
-  // 마지막 페이지 저장
-  try{localStorage.setItem('saju_last_page',id);}catch(e){}
+  // 현재 페이지 세션에 저장 (새로고침 복원용)
+  try{sessionStorage.setItem('saju_cur_page',id);}catch(e){}
 }
 
 window.addEventListener('popstate',(e)=>{
@@ -1316,21 +1313,15 @@ window.addEventListener('load',()=>{
     }
   }catch(e){}
 
-  // ② 마지막 페이지 복원
-  const lastPage=localStorage.getItem('saju_last_page')||'';
-  const hash=window.location.hash.replace('#','');
-  const targetPage=hash||lastPage;
+  // ② 페이지 복원 (sessionStorage 우선)
+  const curPage=sessionStorage.getItem('saju_cur_page')||'';
   const validPages=['pg1','pg2','pg3','pgG','pgGpay','pgMy'];
-  if(targetPage==='pg4'){
-    // 결과 페이지 복원
-    if(!restoreLastReading()){
-      // 복원 실패 시 랜딩으로
-      history.replaceState({page:'pg0'},'','#pg0');
-    }
-  }else if(targetPage&&validPages.includes(targetPage)){
+  if(curPage==='pg4'||sessionStorage.getItem('saju_cur_reading')){
+    restoreLastReading();
+  }else if(curPage&&validPages.includes(curPage)){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(targetPage)?.classList.add('active');
-    if(targetPage==='pgMy')loadMyList();
+    document.getElementById(curPage)?.classList.add('active');
+    if(curPage==='pgMy')loadMyList();
   }
 
   // ③ Google 초기화
