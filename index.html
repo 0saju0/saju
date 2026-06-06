@@ -28,7 +28,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 #root{position:relative;z-index:1}
 .container{max-width:720px;margin:0 auto;padding:0 22px}
 
-/* 상단 로그인 바 */
 .top-bar{position:sticky;top:0;z-index:20;background:rgba(10,7,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border2);padding:10px 22px;display:flex;align-items:center;justify-content:space-between}
 .top-logo{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold);letter-spacing:2px}
 .top-right{display:flex;align-items:center;gap:10px}
@@ -40,7 +39,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 .top-mypage{font-size:11px;color:var(--cream3);cursor:pointer;padding:5px 10px}
 .top-mypage:hover{color:var(--cream)}
 
-/* 히어로 */
 .hero{text-align:center;padding:52px 0 40px;border-bottom:1px solid var(--border2)}
 .hero-moon{font-size:46px;margin-bottom:18px;filter:drop-shadow(0 0 24px rgba(200,164,90,.5));animation:float 5s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
@@ -151,7 +149,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 .btn-rowx .btn{flex:1}
 .warn{display:none;color:#e08080;font-size:12px;text-align:center;margin-bottom:12px;letter-spacing:1px}
 
-/* 결과 */
 .res-hero{text-align:center;padding:28px 0 22px;border-bottom:1px solid var(--border2);margin-bottom:24px}
 .res-name{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;margin:16px 0 5px}
 .res-info{font-size:13px;color:var(--cream3);letter-spacing:1px}
@@ -175,11 +172,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 .ai-body td{padding:9px 7px;border-bottom:1px solid var(--border2);color:var(--cream2);vertical-align:top;line-height:1.7}
 .ai-body .quote{background:rgba(176,70,104,.08);border-left:2px solid var(--rose2);padding:14px 16px;margin:14px 0;font-family:'Noto Serif KR',serif;font-size:14px;color:var(--cream);font-style:italic;line-height:1.8;border-radius:0 3px 3px 0}
 
-/* 저장 버튼 */
 .save-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:rgba(200,164,90,.08);border:1px solid var(--border);border-radius:3px;color:var(--gold2);font-size:13px;cursor:pointer;margin-top:18px;transition:all .2s}
 .save-btn:hover{background:rgba(200,164,90,.14)}
 
-/* 마이페이지 */
 .my-list{display:grid;gap:12px}
 .my-item{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:16px 18px;cursor:pointer;transition:all .2s}
 .my-item:hover{border-color:var(--border);background:rgba(200,164,90,.04)}
@@ -202,11 +197,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 .page.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-/* 구글 로그인 버튼 커스텀 */
 .g-login-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin:10px 0 4px}
 .g-login-hint{font-size:11px;color:var(--cream3);letter-spacing:1px}
 
-/* 모달 */
 .modal-bg{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
 .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:24px;max-width:420px;width:100%}
 .modal-title{font-family:'Noto Serif KR',serif;font-size:17px;color:var(--cream);margin-bottom:18px}
@@ -224,7 +217,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 <div class="bg-light l1"></div><div class="bg-light l2"></div><div class="bg-light l3"></div>
 <div id="root">
 
-<!-- 상단 로그인 바 -->
 <div class="top-bar">
   <div class="top-logo">月下緣</div>
   <div class="top-right" id="top-right">
@@ -244,7 +236,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div>
 
-<!-- LANDING -->
 <div class="page" id="pg0"><div class="container">
   <div class="hero">
     <div class="hero-moon">🌙</div>
@@ -295,7 +286,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div>
 
-<!-- STEP 1 -->
 <div class="page" id="pg1"><div class="container"><div class="section">
   <div class="section-title"><button onclick="goTo('pg0')" style="background:none;border:none;color:var(--cream3);cursor:pointer;font-size:13px;padding:0;letter-spacing:0">← 처음으로</button></div>
   <div class="card">
@@ -311,7 +301,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
           </div>
         </div>
       </div>
-      <!-- 기타 선택 시 대운 계산 기준 -->
       <div class="field" id="daewoon-opt" style="display:none">
         <label class="field-label">대운 계산 기준 <span style="color:var(--cream3);font-weight:300">(사주 계산에만 사용돼요)</span></label>
         <div class="seg">
@@ -342,7 +331,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
       </div>
       <div class="manse" id="manse"><div class="manse-title">나의 사주팔자 萬歲曆</div><div class="pillars" id="pillars"></div><div class="sinsal-row" id="sinsal"></div></div>
 
-      <!-- 나만의 질문 -->
       <div class="field" style="margin-top:4px">
         <label class="field-label">나만의 질문 <span style="color:var(--cream3);font-weight:300">(선택 · 최대 3개)</span></label>
         <div style="font-size:11px;color:var(--cream3);margin-bottom:10px;line-height:1.6">궁금한 것을 직접 적으면 사주로 답해드려요</div>
@@ -356,7 +344,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div></div>
 
-<!-- STEP 2 -->
 <div class="page" id="pg2"><div class="container"><div class="section">
   <div class="section-title"><button onclick="goTo('pg1')" style="background:none;border:none;color:var(--cream3);cursor:pointer;font-size:13px;padding:0;letter-spacing:0">← 이전</button></div>
   <div class="card">
@@ -384,7 +371,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div></div>
 
-<!-- STEP 3 -->
 <div class="page" id="pg3"><div class="container"><div class="section">
   <div class="section-title"><button onclick="goTo('pg2')" style="background:none;border:none;color:var(--cream3);cursor:pointer;font-size:13px;padding:0;letter-spacing:0">← 이전</button></div>
   <div class="card">
@@ -408,7 +394,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div></div>
 
-<!-- STEP 4 결과 -->
 <div class="page" id="pg4"><div class="container">
   <div id="loading" style="display:none"><div style="padding:70px 0"><div class="loading">
     <div class="l-orb"><div class="l-inner">🌙</div></div>
@@ -435,7 +420,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div>
 
-<!-- 궁합 입력 -->
 <div class="page" id="pgG"><div class="container"><div class="section">
   <div class="section-title">궁합 — 두 사람 정보</div>
   <div class="card">
@@ -474,7 +458,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div></div>
 
-<!-- 궁합 결제 -->
 <div class="page" id="pgGpay"><div class="container"><div class="section">
   <div class="section-title">궁합 결제</div>
   <div class="card"><div class="card-body">
@@ -493,7 +476,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div></div>
 </div></div></div>
 
-<!-- 궁합 결과 -->
 <div class="page" id="pgGres"><div class="container">
   <div id="gLoading"><div style="padding:70px 0"><div class="loading"><div class="l-orb"><div class="l-inner">💞</div></div><div class="l-text">두 사람의 인연을 맞춰보는 중</div><div class="l-prog" id="gLoadProg">· · ·</div></div></div></div>
   <div id="gResult" style="display:none">
@@ -506,7 +488,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div>
 
-<!-- 마이페이지 -->
 <div class="page" id="pgMy"><div class="container"><div class="section">
   <div class="section-title">내 풀이 보관함</div>
   <div id="my-not-logged" style="text-align:center;padding:40px 0;color:var(--cream3)">
@@ -521,7 +502,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div></div></div>
 
-<!-- 저장된 풀이 보기 -->
 <div class="page" id="pgSaved"><div class="container">
   <div class="res-hero">
     <div class="hero-badge" id="saved-badge">저장된 풀이</div>
@@ -532,7 +512,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   <div style="padding:28px 0;text-align:center"><button class="btn-ghost" onclick="goTo('pgMy')">← 내 풀이 목록</button></div>
 </div></div>
 
-<!-- 후기 작성 모달 -->
 <div class="modal-bg" id="review-modal">
   <div class="modal-box">
     <div class="modal-title">후기 작성</div>
@@ -551,7 +530,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
   </div>
 </div>
 
-<!-- 로그아웃 모달 -->
 <div class="modal-bg" id="logout-modal">
   <div class="modal-box" style="max-width:300px">
     <div class="modal-title">계정</div>
@@ -566,7 +544,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 </div>
 
 <script>
-/* ════ 사주 계산 엔진 ════ */
 const GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
 const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
 const GAN_KR={甲:'갑',乙:'을',丙:'병',丁:'정',戊:'무',己:'기',庚:'경',辛:'신',壬:'임',癸:'계'};
@@ -592,7 +569,6 @@ function setGender(g){
     if(['남성','여성','기타'].includes(e.textContent))
       e.classList.toggle('on',e.textContent===g+(g==='기타'?'':'성'));
   });
-  // 기타 선택 시 대운 계산 기준 표시
   const opt=document.getElementById('daewoon-opt');
   if(opt)opt.style.display=(g==='기타')?'block':'none';
   if(g!=='기타')state.daewoonBase=(g==='남'?'양':'음');
@@ -632,7 +608,6 @@ function computeSaju(){
     allZhi.forEach(z=>{if(ce.includes(z.zhi)){sinsal['천을귀인']=sinsal['천을귀인']||[];sinsal['천을귀인'].push(z);}});
     let daewoon=[];
     try{
-      // 기타일 때는 daewoonBase로 결정, 아니면 성별로
       const genderForDaewoon=state.gender==='기타'?(state.daewoonBase==='양'?'남':'여'):state.gender;
       const yun=ec.getYun(genderForDaewoon==='남'?1:0);
       const arr=yun.getDaYun();
@@ -680,10 +655,8 @@ function toStep3(){document.getElementById('o-name').textContent=state.pkg.name+
 function selPay(el,m){state.pay=m;document.querySelectorAll('#pg3 .pay').forEach(e=>e.classList.remove('on'));el.classList.add('on');document.getElementById('pay-btn').disabled=false;}
 function pay(){const b=document.getElementById('pay-btn');b.disabled=true;b.textContent='결제 중...';setTimeout(()=>{b.disabled=false;b.textContent='결제하고 사주보기';goTo('pg4');showResult();},1200);}
 
-/* ════ 결과 ════ */
 let lastResultHTML='';let lastResultMeta={};
 async function showResult(){
-  // 결과 화면 즉시 표시 (로딩 화면 없음)
   const s=state.saju;
   document.getElementById('r-badge').textContent=state.pkg.name+(state.readingType==='종합'?' 종합 사주':' 연애·결혼 사주');
   document.getElementById('r-name').textContent=state.name+'님의 사주';
@@ -695,13 +668,11 @@ async function showResult(){
   document.getElementById('r-dm').textContent=s.dayGan;
   document.getElementById('r-dm').className='dm-char '+EL_CLS[GAN_EL[s.dayGan]];
   document.getElementById('r-dm-t').textContent=dm[0];document.getElementById('r-dm-d').textContent=dm[1];
-  // 질문 수집
   state.questions=[
     document.getElementById('q1')?.value.trim(),
     document.getElementById('q2')?.value.trim(),
     document.getElementById('q3')?.value.trim(),
   ].filter(q=>q);
-  // AI 풀이는 백그라운드에서 섹션별로 채워짐
   runAI(s);
 }
 
@@ -711,12 +682,11 @@ function buildContext(s){
   const sinsalStr=Object.keys(s.sinsal).length?Object.entries(s.sinsal).map(([k,v])=>`${k}살(${v.map(x=>x.lbl.replace(/ .*/,'')).join('·')})`).join(', '):'없음';
   const dwStr=s.daewoon.length?s.daewoon.map(d=>`${d.age}세~ ${d.gz}(${GAN_KR[d.gz[0]]}${ZHI_KR[d.gz[1]]})`).join(', '):'정보 없음';
   const swStr=s.saewoon.map(w=>`${w.year} ${w.gz}(${GAN_KR[w.gz[0]]}${ZHI_KR[w.gz[1]]})`).join(', ');
-  // 현재 연도와 실제 만 나이 계산
   const now=new Date();
   const currentYear=now.getFullYear();
   const currentMonth=now.getMonth()+1;
   let age=currentYear-state.year;
-  if(state.month&&currentMonth<state.month)age--; // 생일 안 지났으면 -1
+  if(state.month&&currentMonth<state.month)age--;
   return `[상담자] ${state.name}, ${state.gender}성, ${state.year}년 ${state.month}월 ${state.day}일생(${state.cal}력)${s.hasTime?'':' (출생시 미상)'}
 [현재 시점] ${currentYear}년 ${currentMonth}월 / 상담자 현재 만 ${age}세
 [사주팔자]\n${pdesc}
@@ -739,33 +709,27 @@ ${ctx}
 [반드시 지킬 규칙]
 1. 호칭: 반드시 "${nm}님"만 사용. "님" 단독, "당신", "그분" 절대 금지.
 2. 현재 시점: [현재 시점]에 명시된 연도·나이만 사용. 절대 다른 연도 금지.
-3. 현재/과거 단정 금지: "~했을 것입니다", "~이었을 것입니다" 식으로 가능성으로 표현. 확인되지 않은 과거 경험을 단정하지 말 것. 예: "어릴 때 외로웠다" (X) → "어린 시절 혼자만의 시간이 많았을 수 있습니다" (O)
+3. 현재/과거 단정 금지: "~했을 것입니다", "~이었을 것입니다" 식으로 가능성으로 표현. 확인되지 않은 과거 경험을 단정하지 말 것.
 4. 쉬운 말 필수: 편인·편재·겁재·상관·식신·정관·편관·칠살·비견 등 명리 한자어 단독 사용 절대 금지. 반드시 풀어서 표현.
-   예시: "깊이 생각하고 혼자 분석하는 성향", "활발한 사교력과 재물 감각", "표현력과 창의성이 넘치는 기운"
-   단, 甲寅(갑인)·癸水(계수) 같은 한자+독음 형태는 허용.
 5. 톤: "~한 경향이 있습니다", "~처럼 느껴질 수 있습니다" 식으로 부드럽게.
 6. 구체적 장면으로 묘사. 추상적 표현 금지.
 7. HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 및 마크다운(**) 금지.
 8. 분량: 700자 이상, 3~4문단.`;
 
-  // ━━ CHAPTER 1: 나의 타고난 결혼운
   const ch1=[
     {icon:'💗',title:'나의 연애 성향과 사랑하는 방식',ask:`일간 ${s.dayGan}으로 본 ${nm}님의 타고난 연애 성향. 주는 사랑 vs 받는 사랑 중 어느 쪽인지, 연애 초반·중반·권태기 각각의 행동 패턴을 실제 일상 장면 3개로. 배우자궁(일지)이 의미하는 이상형의 기본 성향도 포함. 최소 700자, 3문단.`},
     {icon:'✨',title:'타고난 매력 자본 — 결혼이 득인가 족쇄인가',ask:`${nm}님이 이성에게 주는 첫인상과 선천적 매력을 오행·십성·신살로. 결혼하는 게 득이 되는 사주인지 족쇄가 되기 쉬운 사주인지 사주 근거로 솔직하게. 최소 700자, 3문단.`},
     {icon:'🧿',title:'사주 속 이혼수와 개운법',ask:`${nm}님 사주에 갈등·이별·이혼 위험이 드러나는 지점을 십성·신살로 구체적 장면과 함께 진단. 그 기운을 다스리는 현대적 개운법 3가지를 번호 문단으로. 최소 700자, 3문단.`},
   ];
-  // ━━ CHAPTER 2: 배우자상
   const ch2=[
     {icon:'🤍',title:'나와 평생을 보내게 될 그 사람 — 첫인상과 분위기',ask:`${nm}님과 잘 맞는 배우자의 첫 만남에서 느껴지는 분위기, 외모적 특징, 말투와 가치관, 함께 있을 때의 온도를 일지와 용신으로 구체적으로. 실제 첫 데이트 장면 묘사 포함. 최소 700자, 3문단.`},
     {icon:'💼',title:'배우자의 성격·자산·직업',ask:`${nm}님에게 잘 맞는 배우자의 성격과 가치관(경제 관념·신념·상대 대하는 태도), 어울리는 직종과 경제적 능력을 오행·십성으로. 첫 데이트에서 그 사람을 알아보는 신호 3가지. 최소 700자, 3문단.`},
     {icon:'⚡',title:'절대 피해야 할 악연',ask:`${nm}님의 운을 깎아먹는 이성의 특징, 나를 편안하게 하는 사람 vs 불안하게 하는 사람의 차이, 나만 애쓰는 관계인지 함께 성장하는 관계인지 구별하는 법. 최소 700자, 3문단.`},
   ];
-  // ━━ CHAPTER 3: 결혼 타이밍
   const ch3=[
     {icon:'⏰',title:'놓치면 땅을 치고 후회할 결혼 골든타임',ask:`향후 세운·대운으로 결혼운이 최고로 올라가는 시기 TOP3를 <table>(컬럼: 순위/시기 년·월/세운 간지와 일주 관계/그때 만나는 인연 특징)로. 실제 간지 인용 필수. 표 아래 각 순위 2문단씩 해설. 총 최소 900자.`},
     {icon:'⚠️',title:'성급하면 망하는 시기 / 늦으면 고립되는 시기',ask:`${nm}님 사주에서 결혼을 서두르면 실패하는 위험 시기와, 너무 미루면 고립되는 시기를 대운·세운으로 구체적 연도와 함께. 프러포즈·혼인 신고에 적합한 가장 좋은 타이밍도. 최소 700자, 3문단.`},
   ];
-  // ━━ CHAPTER 4: 결혼 후 미래
   const ch4=[
     {icon:'💰',title:'결혼 후 재물운과 관계운',ask:`결혼 이후 ${nm}님의 재물운 변화, 배우자와의 경제 관계, 가정 내 역할 균형을 사주로. 결혼 후 삶이 어떻게 달라지는지 구체적 장면으로. 최소 700자, 3문단.`},
     {icon:'👶',title:'자녀운 — 자녀의 수, 임신 좋은 시기, 자녀와의 관계',ask:`${nm}님의 식상(食傷)과 자녀궁으로 본 자녀운: 자녀가 몇 명쯤 인연이 닿을지, 임신하기 좋은 대운·세운 시기, 나와 자녀의 관계는 어떤 색깔인지. 최소 700자, 3문단.`},
@@ -793,9 +757,9 @@ ${ctx}
 
   let secs;
   if(state.readingType==='종합'){
-    secs=generalSecs.slice(); // 기본: 10개
-    if(state.pkg.name==='프리미엄') secs=[...generalSecs,...generalExtra.slice(0,2)]; // 12개 (피해야할것·나이대별시나리오 추가)
-    if(state.pkg.name==='VIP') secs=[...generalSecs,...generalExtra]; // 14개 (연애·결혼 포함)
+    secs=generalSecs.slice();
+    if(state.pkg.name==='프리미엄') secs=[...generalSecs,...generalExtra.slice(0,2)];
+    if(state.pkg.name==='VIP') secs=[...generalSecs,...generalExtra];
   }else{
     if(state.pkg.name==='기본') secs=[...ch1,...ch3.slice(0,1),closing];
     else if(state.pkg.name==='프리미엄') secs=[...ch1,...ch2,...ch3,closing];
@@ -804,7 +768,6 @@ ${ctx}
 
   const body=document.getElementById('ai-body');body.innerHTML='';
 
-  // 나만의 질문 섹션 추가 (있을 때만)
   if(state.questions&&state.questions.length>0){
     const qList=state.questions.map((q,i)=>`Q${i+1}. ${q}`).join('\n');
     secs=[...secs,{
@@ -814,7 +777,6 @@ ${ctx}
     }];
   }
 
-  // 로그인 안내 배너
   if(gUser){
     const banner=document.createElement('div');
     banner.style.cssText='background:rgba(200,164,90,.07);border:1px solid var(--border);border-radius:3px;padding:11px 16px;margin-bottom:18px;font-size:12px;color:var(--gold);display:flex;align-items:center;gap:8px';
@@ -822,7 +784,6 @@ ${ctx}
     body.appendChild(banner);
   }
 
-  // 모든 섹션 플레이스홀더 먼저 추가
   const blocks=secs.map((sec,i)=>{
     const div=document.createElement('div');
     div.id='sec-block-'+i;
@@ -836,37 +797,32 @@ ${ctx}
   outro.textContent='― 月下 月下緣 ―';
   body.appendChild(outro);
 
-  // 2개씩 묶어서 안정적으로 요청
+  // ★ 변경: 한 번에 1개씩 순차 처리 + 요청 간 간격 (요청 폭주로 인한 실패 방지)
   let allFilled=true;
-  const BATCH=2;
-  for(let b=0;b<secs.length;b+=BATCH){
-    const batch=secs.slice(b,b+BATCH);
-    await Promise.all(batch.map(async(sec,j)=>{
-      const i=b+j;
-      await sleep(j*300);
-      const secPrompt=common+`\n\n[이번 항목] ${sec.icon} ${sec.title}\n${sec.ask}\n\n절대 # ## 마크다운 헤더 사용 금지. <p><h4><strong><table><div class="quote"> 태그만 사용.`;
-      let txt=await fetchAI(secPrompt,2);
-      if(txt){
-        txt=txt.replace(/```html|```/g,'')
-               .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-               .replace(/^#+\s+(.+)$/gm,'<h4>$1</h4>')
-               .trim();
-        blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt}`;
-      }else{
-        allFilled=false;
-        blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>
-          <div style="text-align:center;padding:16px 0">
-            <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
-            <button onclick="retrySection(this,'${sec.icon}','${sec.title.replace(/'/g,"\\'")}',${i})"
-              style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:3px;cursor:pointer;font-size:13px">
-              🔄 다시 불러오기
-            </button>
-          </div>`;
-      }
-    }));
+  for(let i=0;i<secs.length;i++){
+    const sec=secs[i];
+    const secPrompt=common+`\n\n[이번 항목] ${sec.icon} ${sec.title}\n${sec.ask}\n\n절대 # ## 마크다운 헤더 사용 금지. <p><h4><strong><table><div class="quote"> 태그만 사용.`;
+    let txt=await fetchAI(secPrompt,3);
+    if(txt){
+      txt=txt.replace(/```html|```/g,'')
+             .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+             .replace(/^#+\s+(.+)$/gm,'<h4>$1</h4>')
+             .trim();
+      blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt}`;
+    }else{
+      allFilled=false;
+      blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>
+        <div style="text-align:center;padding:16px 0">
+          <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
+          <button onclick="retrySection(this,'${sec.icon}','${sec.title.replace(/'/g,"\\'")}',${i})"
+            style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:3px;cursor:pointer;font-size:13px">
+            🔄 다시 불러오기
+          </button>
+        </div>`;
+    }
+    await sleep(700); // 다음 요청까지 잠깐 쉼
   }
 
-  // 완료 후 sessionStorage(새로고침) + localStorage(로그인저장) 둘 다 저장
   lastResultHTML=body.innerHTML;
   lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
   const saveObj={
@@ -881,40 +837,36 @@ ${ctx}
     dmD:document.getElementById('r-dm-d')?.textContent||'',
     dmCls:document.getElementById('r-dm')?.className||'',
   };
-  // 완성된 내용만 저장 (실패 섹션 없을 때만)
-  lastResultHTML=body.innerHTML;
-  lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
   if(allFilled&&lastResultHTML&&lastResultHTML.length>500&&state.name?.trim()){
     try{sessionStorage.setItem('saju_cur_reading',JSON.stringify(saveObj));}catch(e){}
     try{localStorage.setItem('saju_last',JSON.stringify(saveObj));}catch(e){}
   }
   if(gUser){
     autoSave();
-    document.getElementById('save-btn').style.display='none'; // 자동저장이니 버튼 숨김
+    document.getElementById('save-btn').style.display='none';
   }else{
-    document.getElementById('save-btn').style.display='flex'; // 비로그인: 수동 저장
+    document.getElementById('save-btn').style.display='flex';
     document.getElementById('save-btn').innerHTML='💾 이 풀이 저장하기 (로그인 필요)';
     document.getElementById('save-btn').onclick=()=>{alert('저장하려면 우측 상단에서 로그인해주세요.');};
   }
 }
 
-function fallback(sec,s){
-  const nm=state.name;return`<p><strong>${nm}</strong>님은 <strong>${DM_DESC[s.dayGan][0]}</strong>입니다. ${sec.title} 항목에서 그 특성이 드러납니다. 서버 연결 문제로 자세한 풀이를 받지 못했습니다.</p><p style="color:var(--cream3);font-size:12px">(AI 연결이 원활하지 않아 요약본이 표시되었습니다.)</p>`;
-}
-
-/* ════ API 호출 ════ */
 let AI_LAST_ERR='';
 async function fetchAI(prompt,retries){
   for(let a=0;a<=retries;a++){
     try{
       const res=await fetch('/api/saju',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
-      if(!res.ok){AI_LAST_ERR='HTTP '+res.status;await sleep(800);continue;}
+      if(!res.ok){
+        AI_LAST_ERR='HTTP '+res.status;
+        // 429(요청 과다)/529(과부하)면 더 오래 기다렸다 재시도
+        await sleep((res.status===429||res.status===529)?2500:1000);
+        continue;
+      }
       const data=await res.json();
-      if(data&&data.error){AI_LAST_ERR=data.error;await sleep(800);continue;}
+      if(data&&data.error){AI_LAST_ERR=data.error;await sleep(1500);continue;}
       const t=(data&&data.text)?data.text:'';
       if(t&&t.trim()){
         AI_LAST_ERR='';
-        // 마크다운 → HTML 변환
         const html=t
           .replace(/```html|```/g,'')
           .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
@@ -922,13 +874,12 @@ async function fetchAI(prompt,retries){
           .trim();
         return html;
       }
-      AI_LAST_ERR='empty response';await sleep(800);
-    }catch(e){AI_LAST_ERR='fetch failed: '+(e.message||e);await sleep(800);}
+      AI_LAST_ERR='empty response';await sleep(1000);
+    }catch(e){AI_LAST_ERR='fetch failed: '+(e.message||e);await sleep(1000);}
   }
   return '';
 }
 
-/* ════ 저장 / 다시보기 (Supabase) ════ */
 function saveResult(){
   if(!gUser){alert('구글 로그인 후 저장할 수 있어요.');return;}
   autoSave();
@@ -941,7 +892,6 @@ async function autoSave(){
     const data=await res.json();
     if(data.ok)showToast('💾 내 풀이 보관함에 저장되었습니다!');
   }catch(e){
-    // 저장 실패 시 localStorage fallback
     const key='saju_'+gUser.sub;
     let saved=[];try{saved=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
     saved.unshift({...lastResultMeta,html:lastResultHTML,id:Date.now()});
@@ -998,7 +948,6 @@ async function viewSaved(id){
   }
 }
 
-/* ════ 궁합 ════ */
 let gState={A:{gender:''},B:{gender:''},pay:''};
 function gSetGender(who,g){
   gState[who].gender=g;
@@ -1068,18 +1017,19 @@ ${ctx}
     return div;
   });
 
-  await Promise.all(secs.map(async(sec,i)=>{
-    await sleep(i*300);
-    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,1);
+  // ★ 변경: 궁합도 한 번에 1개씩 순차 처리
+  for(let i=0;i<secs.length;i++){
+    const sec=secs[i];
+    const txt=await fetchAI(common+'\n\n[이번 항목] '+sec.title+'\n'+sec.ask,3);
     gBlocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt||`<p>${esc(A.name)}님과 ${esc(B.name)}님의 궁합입니다.</p>`}`;
-  }));
+    await sleep(700);
+  }
 
   document.getElementById('gLoading').style.display='none';
   document.getElementById('gResult').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* ════ 후기 ════ */
 const SEED_REVIEWS=[
   {n:'이*은',s:5,d:'2025.05',t:'배우자상 설명이 지금 만나는 사람이랑 똑같아서 소름. 결혼 골든타임도 구체적으로 알려줘서 좋았어요.'},
   {n:'최*아',s:5,d:'2025.05',t:'연애할 때 제 약점을 정확히 짚어줘서 놀랐어요. "혼자 분석하다 지친다"는 말에 울컥했네요.'},
@@ -1117,14 +1067,11 @@ function submitReview(){
   if(pickedStar>=4){renderReviews();}else{alert('소중한 후기 감사합니다! 검토 후 반영됩니다.');}
 }
 
-/* ════ 구글 로그인 ════ */
-// ⚠️ 아래 YOUR_GOOGLE_CLIENT_ID를 Google Cloud Console에서 발급받은 Client ID로 교체하세요
 const GOOGLE_CLIENT_ID='25345900699-269nfjsmcr7a22fh67f9p330uaj8nqhk.apps.googleusercontent.com';
 const KAKAO_JS_KEY='5a5a14930018a6fa931764d78ed2fd50';
 let gUser=null;
 
 function triggerKakaoLogin(){
-  // 현재 풀이 sessionStorage에 저장
   const aiBody=document.getElementById('ai-body');
   const htmlContent=aiBody&&aiBody.innerHTML.trim()?aiBody.innerHTML:lastResultHTML;
   if(htmlContent){
@@ -1137,7 +1084,6 @@ function triggerKakaoLogin(){
       }));
     }catch(e){}
   }
-  // 카카오 OAuth 직접 이동 (팝업 없음 - iOS 완벽 호환)
   const redirectUri=encodeURIComponent(location.origin+location.pathname);
   location.href=`https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_JS_KEY}&redirect_uri=${redirectUri}&response_type=token`;
 }
@@ -1145,7 +1091,6 @@ function triggerGLogin(){
   if(typeof google==='undefined'){
     alert('Google 로그인 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;
   }
-  // 현재 풀이 내용 sessionStorage에 저장
   const aiBody=document.getElementById('ai-body');
   const htmlContent=aiBody&&aiBody.innerHTML.trim()?aiBody.innerHTML:lastResultHTML;
   if(htmlContent){
@@ -1176,7 +1121,6 @@ function onGoogleLogin(response){
   const payload=parseJwt(response.credential);
   if(!payload||!payload.sub)return;
   gUser={sub:payload.sub,name:payload.name,email:payload.email,picture:payload.picture};
-  // localStorage에 저장 (새로고침 후에도 유지)
   try{localStorage.setItem('saju_guser',JSON.stringify(gUser));}catch(e){}
   updateLoginUI();
   restoreAndSave();
@@ -1200,7 +1144,6 @@ function restoreAndSave(){
     try{
       lastResultHTML=tempHtml;
       lastResultMeta=JSON.parse(tempMeta);
-      // 결과 페이지 복원
       if(tempPage==='pg4'){
         const aiBody=document.getElementById('ai-body');
         if(aiBody)aiBody.innerHTML=tempHtml;
@@ -1217,7 +1160,6 @@ function restoreAndSave(){
       sessionStorage.removeItem('saju_restore_page');
     }catch(e){}
   }
-  // 자동 저장
   if(lastResultHTML){
     autoSave();
     const sb=document.getElementById('save-btn');
@@ -1258,7 +1200,6 @@ function restoreInputForm(){
 
 function restoreLastReading(){
   try{
-    // sessionStorage 먼저 (새로고침), 없으면 localStorage
     const raw=sessionStorage.getItem('saju_cur_reading')||localStorage.getItem('saju_last');
     if(!raw)return false;
     const d=JSON.parse(raw);
@@ -1294,14 +1235,12 @@ function doLogout(){
 }
 function closeModal(id){document.getElementById(id).style.display='none';}
 
-/* ════ 공통 ════ */
 function goTo(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='pgMy')loadMyList();
   history.pushState({page:id},'','#'+id);
-  // 현재 페이지 + state 저장 (새로고침 복원용)
   try{
     sessionStorage.setItem('saju_cur_page',id);
     if(['pg1','pg2','pg3'].includes(id)){
@@ -1331,7 +1270,6 @@ function showToast(msg){
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
-// 실패한 섹션 개별 재시도
 async function retrySection(btn,icon,title,idx){
   const block=document.getElementById('sec-block-'+idx);
   if(!block)return;
@@ -1341,7 +1279,7 @@ async function retrySection(btn,icon,title,idx){
   const persp=state.readingType==='종합'?'인생 전반(성격·직업·재물·건강·운세) 관점':'연애·결혼 관점';
   const relNote=state.relStatus?` 현재 연애 상태: ${state.relStatus}.`:'';
   const prompt=`당신은 한국 정통 명리학 대가 "월하 선생"입니다. 아래 정확히 계산된 사주 데이터를 근거로 ${persp}에서 풀이하세요.${relNote}\n\n⚠️ 반드시 "${nm}님"이라고만 부를 것. "님" 단독, "당신", "그분" 절대 금지.\n\n${ctx}\n\n[규칙]\n- 반드시 "${nm}님"을 사용. 모든 문단에서.\n- 실제 사주 글자를 콕 집어 근거로 인용\n- 전문용어는 괄호로 쉽게 설명\n- 일상의 구체적 장면으로 묘사\n- HTML 태그만 사용(<p>,<h4>,<strong>,<table>,<div class="quote">). <h3> 금지.\n\n[이번 항목] ${title}\n최소 700자, 3문단 이상.`;
-  const txt=await fetchAI(prompt,2);
+  const txt=await fetchAI(prompt,3);
   if(txt){block.innerHTML=`<h3>${icon} ${title}</h3>${txt}`;}
   else{btn.textContent='🔄 다시 불러오기';btn.disabled=false;}
 }
@@ -1353,25 +1291,21 @@ window.addEventListener('load',()=>{
     s.addEventListener('click',()=>{pickedStar=parseInt(s.dataset.v);paintStars();});
   });
 
-  // ① 로그인 복원
   try{
     const saved=localStorage.getItem('saju_guser');
     if(saved){gUser=JSON.parse(saved);updateLoginUI();}
   }catch(e){}
 
-  // ② 페이지 복원 (URL 해시 우선)
   const hash=window.location.hash.replace('#','');
   const allPages=['pg0','pg1','pg2','pg3','pg4','pgG','pgGpay','pgMy','pgSaved'];
   const curPage=sessionStorage.getItem('saju_cur_page')||'';
   const target=(hash&&allPages.includes(hash))?hash:(curPage||'pg0');
 
-  // state 복원
   try{
     const savedState=sessionStorage.getItem('saju_cur_state');
     if(savedState){
       const s=JSON.parse(savedState);
       Object.assign(state,s);
-      // 결제 페이지 order 정보 업데이트
       if(target==='pg3'){
         const oName=document.getElementById('o-name');
         const oUser=document.getElementById('o-user');
@@ -1386,7 +1320,6 @@ window.addEventListener('load',()=>{
   if(target==='pg4'){
     if(!restoreLastReading()){goTo('pg0');}
   }else if(target==='pg3'||target==='pg2'){
-    // 결제/패키지 페이지 새로고침 → pg1으로 (입력값 복원)
     restoreInputForm();
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('pg1').classList.add('active');
@@ -1397,7 +1330,6 @@ window.addEventListener('load',()=>{
     if(target==='pg1') restoreInputForm();
   }
 
-  // ③ Google + 카카오 초기화
   if(typeof google!=='undefined'){
     try{google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});}catch(e){}
   }
@@ -1405,12 +1337,10 @@ window.addEventListener('load',()=>{
     try{Kakao.init(KAKAO_JS_KEY);}catch(e){}
   }
 
-  // ⑤ 카카오 로그인 후 토큰 처리
   const hashParams=new URLSearchParams(location.hash.replace('#',''));
   const kakaoToken=hashParams.get('access_token');
   if(kakaoToken){
-    // 토큰으로 사용자 정보 가져오기
-    history.replaceState(null,'',location.pathname); // URL에서 토큰 제거
+    history.replaceState(null,'',location.pathname);
     fetch('https://kapi.kakao.com/v2/user/me',{
       headers:{Authorization:'Bearer '+kakaoToken}
     }).then(r=>r.json()).then(res=>{
@@ -1427,7 +1357,6 @@ window.addEventListener('load',()=>{
       showToast('💬 카카오 로그인 완료!');
     }).catch(()=>{});
   }
-  // ④ sessionStorage 복원 대기
   if(sessionStorage.getItem('saju_temp_html')&&gUser){
     restoreAndSave();
   }else{
