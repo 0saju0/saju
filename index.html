@@ -1229,24 +1229,23 @@ function restoreLastReading(){
     const raw=localStorage.getItem('saju_last');
     if(!raw)return false;
     const d=JSON.parse(raw);
-    if(!d||!d.html)return false;
-    // 결과 화면 복원
+    if(!d||!d.html||d.html.length<100)return false;
+    // DOM 복원
     lastResultHTML=d.html;
     lastResultMeta=d.meta||{};
-    if(d.badge)document.getElementById('r-badge').textContent=d.badge;
-    if(d.rname)document.getElementById('r-name').textContent=d.rname;
-    if(d.info)document.getElementById('r-info').textContent=d.info;
-    if(d.pillars)document.getElementById('r-pillars').innerHTML=d.pillars;
-    if(d.sinsal)document.getElementById('r-sinsal').innerHTML=d.sinsal;
+    const set=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.textContent=val;};
+    const setH=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.innerHTML=val;};
+    set('r-badge',d.badge);set('r-name',d.rname);set('r-info',d.info);
+    setH('r-pillars',d.pillars);setH('r-sinsal',d.sinsal);setH('ai-body',d.html);
     const dm=document.getElementById('r-dm');
-    if(dm&&d.dm){dm.textContent=d.dm;dm.className=d.dmCls||'dm-char';}
-    if(d.dmT)document.getElementById('r-dm-t').textContent=d.dmT;
-    if(d.dmD)document.getElementById('r-dm-d').textContent=d.dmD;
-    document.getElementById('ai-body').innerHTML=d.html;
+    if(dm){dm.textContent=d.dm||'';dm.className=d.dmCls||'dm-char';}
+    set('r-dm-t',d.dmT);set('r-dm-d',d.dmD);
     document.getElementById('loading').style.display='none';
     document.getElementById('result').style.display='block';
     document.getElementById('save-btn').style.display=gUser?'none':'flex';
-    goTo('pg4');
+    // pg4 직접 활성화 (goTo 대신)
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('pg4').classList.add('active');
     return true;
   }catch(e){return false;}
 }
@@ -1339,15 +1338,14 @@ window.addEventListener('load',()=>{
     try{google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});}catch(e){}
   }
 
-  // ④ sessionStorage 복원 대기 데이터 있으면 구글 로그인 재시도
-  if(sessionStorage.getItem('saju_temp_html')&&!gUser){
-    if(typeof google!=='undefined'){
-      try{google.accounts.id.prompt();}catch(e){}
-    }
-  }
-  // 이미 로그인 상태면 바로 복원
+  // ④ 이미 로그인 상태면 sessionStorage 복원
   if(sessionStorage.getItem('saju_temp_html')&&gUser){
     restoreAndSave();
+  }else{
+    // 불필요한 sessionStorage 정리
+    sessionStorage.removeItem('saju_temp_html');
+    sessionStorage.removeItem('saju_temp_meta');
+    sessionStorage.removeItem('saju_restore_page');
   }
 });
 </script>
