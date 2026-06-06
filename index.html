@@ -1253,7 +1253,7 @@ function restoreLastReading(){
 
 function doLogout(){
   gUser=null;
-  try{localStorage.removeItem('saju_guser');}catch(e){}
+  try{localStorage.removeItem('saju_guser');localStorage.removeItem('saju_last_page');}catch(e){}
   document.getElementById('g-signin-area').style.display='flex';
   document.getElementById('g-user-area').style.display='none';
   closeModal('logout-modal');
@@ -1268,6 +1268,8 @@ function goTo(id){
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='pgMy')loadMyList();
   history.pushState({page:id},'','#'+id);
+  // 마지막 페이지 저장
+  try{localStorage.setItem('saju_last_page',id);}catch(e){}
 }
 
 window.addEventListener('popstate',(e)=>{
@@ -1315,16 +1317,21 @@ window.addEventListener('load',()=>{
     }
   }catch(e){}
 
-  // ② URL 해시로 페이지 복원
+  // ② 마지막 페이지 복원
+  const lastPage=localStorage.getItem('saju_last_page')||'';
   const hash=window.location.hash.replace('#','');
-  const validPages=['pg0','pg1','pg2','pg3','pgG','pgGpay','pgMy'];
-  if(hash==='pg4'){
-    // 결과 페이지 복원 시도
-    restoreLastReading();
-  }else if(hash&&validPages.includes(hash)){
+  const targetPage=hash||lastPage;
+  const validPages=['pg1','pg2','pg3','pgG','pgGpay','pgMy'];
+  if(targetPage==='pg4'){
+    // 결과 페이지 복원
+    if(!restoreLastReading()){
+      // 복원 실패 시 랜딩으로
+      history.replaceState({page:'pg0'},'','#pg0');
+    }
+  }else if(targetPage&&validPages.includes(targetPage)){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(hash)?.classList.add('active');
-    if(hash==='pgMy')loadMyList();
+    document.getElementById(targetPage)?.classList.add('active');
+    if(targetPage==='pgMy')loadMyList();
   }
 
   // ③ Google 초기화
