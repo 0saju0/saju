@@ -1271,8 +1271,18 @@ function goTo(id){
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='pgMy')loadMyList();
   history.pushState({page:id},'','#'+id);
-  // 현재 페이지 세션에 저장 (새로고침 복원용)
-  try{sessionStorage.setItem('saju_cur_page',id);}catch(e){}
+  // 현재 페이지 + state 저장 (새로고침 복원용)
+  try{
+    sessionStorage.setItem('saju_cur_page',id);
+    if(['pg1','pg2','pg3'].includes(id)){
+      sessionStorage.setItem('saju_cur_state',JSON.stringify({
+        name:state.name,gender:state.gender,cal:state.cal,
+        year:state.year,month:state.month,day:state.day,timeIdx:state.timeIdx,
+        readingType:state.readingType,relStatus:state.relStatus,
+        pkg:state.pkg,daewoonBase:state.daewoonBase
+      }));
+    }
+  }catch(e){}
 }
 
 window.addEventListener('popstate',(e)=>{
@@ -1319,17 +1329,35 @@ window.addEventListener('load',()=>{
     if(saved){gUser=JSON.parse(saved);updateLoginUI();}
   }catch(e){}
 
-  // ② URL 해시로 페이지 결정 (가장 단순하고 확실한 방법)
+  // ② 페이지 복원 (URL 해시 우선)
   const hash=window.location.hash.replace('#','');
   const allPages=['pg0','pg1','pg2','pg3','pg4','pgG','pgGpay','pgMy','pgSaved'];
-  const target=hash&&allPages.includes(hash)?hash:'pg0';
+  const curPage=sessionStorage.getItem('saju_cur_page')||'';
+  const target=(hash&&allPages.includes(hash))?hash:(curPage||'pg0');
+
+  // state 복원
+  try{
+    const savedState=sessionStorage.getItem('saju_cur_state');
+    if(savedState){
+      const s=JSON.parse(savedState);
+      Object.assign(state,s);
+      // 결제 페이지 order 정보 업데이트
+      if(target==='pg3'){
+        const oName=document.getElementById('o-name');
+        const oUser=document.getElementById('o-user');
+        const oPrice=document.getElementById('o-price');
+        if(oName&&state.pkg?.name)oName.textContent=state.pkg.name+(state.readingType==='종합'?' 종합 사주':' 연애·결혼 사주');
+        if(oUser&&state.name)oUser.textContent=state.name;
+        if(oPrice&&state.pkg?.price)oPrice.textContent=state.pkg.price.toLocaleString()+'원';
+      }
+    }
+  }catch(e){}
 
   if(target==='pg4'){
-    // 결과 페이지: sessionStorage/localStorage에서 복원
     if(!restoreLastReading()){goTo('pg0');}
   }else{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(target).classList.add('active');
+    document.getElementById(target)?.classList.add('active');
     if(target==='pgMy')loadMyList();
   }
 
