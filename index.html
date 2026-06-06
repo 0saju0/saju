@@ -893,8 +893,11 @@ ${ctx}
     dmD:document.getElementById('r-dm-d')?.textContent||'',
     dmCls:document.getElementById('r-dm')?.className||'',
   };
-  try{sessionStorage.setItem('saju_cur_reading',JSON.stringify(saveObj));}catch(e){}
-  try{localStorage.setItem('saju_last',JSON.stringify(saveObj));}catch(e){}
+  // 실제 내용 있을 때만 저장 (플레이스홀더 제외)
+  if(lastResultHTML&&lastResultHTML.length>500&&lastResultMeta.name&&lastResultMeta.name.trim()){
+    try{sessionStorage.setItem('saju_cur_reading',JSON.stringify(saveObj));}catch(e){}
+    try{localStorage.setItem('saju_last',JSON.stringify(saveObj));}catch(e){}
+  }
   if(gUser){
     autoSave();
     document.getElementById('save-btn').style.display='none'; // 자동저장이니 버튼 숨김
@@ -1229,7 +1232,11 @@ function restoreLastReading(){
     const raw=sessionStorage.getItem('saju_cur_reading')||localStorage.getItem('saju_last');
     if(!raw)return false;
     const d=JSON.parse(raw);
-    if(!d||!d.html||d.html.length<100)return false;
+    if(!d||!d.html||d.html.length<500||!d.meta||!d.meta.name||!d.meta.name.trim()){
+      localStorage.removeItem('saju_last');
+      sessionStorage.removeItem('saju_cur_reading');
+      return false;
+    }
     lastResultHTML=d.html;lastResultMeta=d.meta||{};
     const set=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.textContent=val;};
     const setH=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.innerHTML=val;};
