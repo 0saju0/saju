@@ -700,15 +700,17 @@ function buildContext(s){
       if(age>=s.daewoon[i].age){found=s.daewoon[i];break;}
     }
     if(!found)found=s.daewoon[0];
-    curDw=`${found.age}세부터 시작된 ${found.gz}(${GAN_KR[found.gz[0]]}${ZHI_KR[found.gz[1]]}) 대운`;
+    curDw=`${found.gz}(${GAN_KR[found.gz[0]]}${ZHI_KR[found.gz[1]]}) 대운`;
   }
+  // 대운 흐름도 나이 없이 간지만 (AI가 나이 잘못 쓰는 것 원천 차단)
+  const dwGanOnly=s.daewoon.length?s.daewoon.map(d=>`${d.gz}(${GAN_KR[d.gz[0]]}${ZHI_KR[d.gz[1]]})`).join(' → '):'정보 없음';
   return `[상담자] ${state.name}, ${state.gender}성, ${state.year}년 ${state.month}월 ${state.day}일생(${state.cal}력)${s.hasTime?'':' (출생시 미상)'}
 [현재 시점] ${currentYear}년 ${currentMonth}월 / 상담자 현재 만 ${age}세
 [사주팔자]\n${pdesc}
 [일간] ${s.dayGan}(${GAN_KR[s.dayGan]}) — ${DM_DESC[s.dayGan][0]}
 [오행 분포] ${oc}
 [신살] ${sinsalStr}
-[대운 흐름] ${dwStr}
+[대운 흐름] ${dwGanOnly}
 [현재 대운] ${curDw}
 [향후 세운] ${swStr}`;
 }
@@ -724,7 +726,7 @@ ${ctx}
 
 [반드시 지킬 규칙]
 1. 호칭: 반드시 "${nm}님"만 사용. "님" 단독, "당신", "그분" 절대 금지.
-2. 현재 시점: [현재 시점]에 명시된 연도·나이만 사용. 절대 다른 연도 금지.
+2. 현재 시점: [현재 시점]에 명시된 연도·나이만 사용. 절대 다른 연도 금지. 단, 대운은 "OO세부터", "25세~35세" 같은 나이를 절대 쓰지 말 것. 대운은 [현재 대운]에 적힌 간지 이름(예: 갑인 대운)으로만 언급할 것. 대운 나이를 직접 계산하거나 추측하지 말 것.
 3. 현재/과거 단정 금지: "~했을 것입니다", "~이었을 것입니다" 식으로 가능성으로 표현. 확인되지 않은 과거 경험을 단정하지 말 것.
 4. 쉬운 말 필수: 편인·편재·겁재·상관·식신·정관·편관·칠살·비견 등 명리 한자어 단독 사용 절대 금지. 반드시 풀어서 표현.
 5. 톤: "~한 경향이 있습니다", "~처럼 느껴질 수 있습니다" 식으로 부드럽게.
@@ -789,7 +791,7 @@ ${ctx}
     secs=[...secs,{
       icon:'❓',
       title:'나의 질문에 대한 답변',
-      ask:`${nm}님이 직접 질문했습니다. 아래 질문들에 사주 데이터를 근거로 하나씩 정성껏 답해주세요.\n\n${qList}\n\n각 질문마다 <h4>Q. 질문내용</h4> 형식으로 제목 달고, 답변은 사주 근거와 함께 구체적으로. 전체 최소 700자.`
+      ask:`⚠️ 이 항목은 일반 풀이가 아니라, ${nm}님이 직접 적은 질문에 답하는 항목입니다. 아래 질문 외에 다른 주제를 절대 꺼내지 말고, 오직 아래 질문 하나하나에만 답하세요.\n\n${qList}\n\n작성 방식: 질문마다 <h4>Q. (질문 내용 그대로)</h4> 를 먼저 쓰고, 그 아래 <p>로 사주 데이터를 근거로 답을 씁니다. 질문이 ${state.questions.length}개면 답도 정확히 ${state.questions.length}개. 질문 내용을 바꾸거나 새 질문을 만들지 말 것. 각 답변은 따뜻하고 구체적으로.`
     }];
   }
 
@@ -841,6 +843,14 @@ ${ctx}
 
   lastResultHTML=body.innerHTML;
   lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
+  // 풀이가 진짜 다 끝났는지 검사 (미완성/실패 텍스트가 있으면 저장 금지)
+  const isComplete=allFilled
+    && lastResultHTML
+    && lastResultHTML.length>500
+    && state.name?.trim()
+    && !lastResultHTML.includes('풀이 중')
+    && !lastResultHTML.includes('불러오지 못했')
+    && !lastResultHTML.includes('풀이 중입니다');
   const saveObj={
     html:lastResultHTML,meta:lastResultMeta,
     badge:document.getElementById('r-badge')?.textContent||'',
@@ -853,12 +863,12 @@ ${ctx}
     dmD:document.getElementById('r-dm-d')?.textContent||'',
     dmCls:document.getElementById('r-dm')?.className||'',
   };
-  if(allFilled&&lastResultHTML&&lastResultHTML.length>500&&state.name?.trim()){
+  if(isComplete){
     try{sessionStorage.setItem('saju_cur_reading',JSON.stringify(saveObj));}catch(e){}
     try{localStorage.setItem('saju_last',JSON.stringify(saveObj));}catch(e){}
   }
   if(gUser){
-    autoSave();
+    if(isComplete)autoSave(); // 완성됐을 때만 보관함에 저장
     document.getElementById('save-btn').style.display='none';
   }else{
     document.getElementById('save-btn').style.display='flex';
@@ -1176,7 +1186,10 @@ function restoreAndSave(){
       sessionStorage.removeItem('saju_restore_page');
     }catch(e){}
   }
-  if(lastResultHTML){
+  if(lastResultHTML
+     && lastResultHTML.length>500
+     && !lastResultHTML.includes('풀이 중')
+     && !lastResultHTML.includes('불러오지 못했')){
     autoSave();
     const sb=document.getElementById('save-btn');
     if(sb)sb.style.display='none';
@@ -1219,7 +1232,8 @@ function restoreLastReading(){
     const raw=sessionStorage.getItem('saju_cur_reading')||localStorage.getItem('saju_last');
     if(!raw)return false;
     const d=JSON.parse(raw);
-    if(!d||!d.html||d.html.length<500||!d.meta||!d.meta.name||!d.meta.name.trim()){
+    if(!d||!d.html||d.html.length<500||!d.meta||!d.meta.name||!d.meta.name.trim()
+       ||d.html.includes('풀이 중')||d.html.includes('불러오지 못했')){
       localStorage.removeItem('saju_last');
       sessionStorage.removeItem('saju_cur_reading');
       return false;
@@ -1333,17 +1347,25 @@ window.addEventListener('load',()=>{
     }
   }catch(e){}
 
-  if(target==='pg4'){
-    if(!restoreLastReading()){goTo('pg0');}
-  }else if(target==='pg3'||target==='pg2'){
-    restoreInputForm();
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('pg1').classList.add('active');
-  }else{
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(target)?.classList.add('active');
-    if(target==='pgMy')loadMyList();
-    if(target==='pg1') restoreInputForm();
+  try{
+    if(target==='pg4'){
+      if(!restoreLastReading()){goTo('pg0');}
+    }else if(target==='pg3'||target==='pg2'){
+      restoreInputForm();
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('pg1').classList.add('active');
+    }else{
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById(target)?.classList.add('active');
+      if(target==='pgMy')loadMyList();
+      if(target==='pg1') restoreInputForm();
+    }
+  }catch(e){
+    // 복원 중 오류가 나도 화면이 깨지지 않게 홈으로
+    try{
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('pg0').classList.add('active');
+    }catch(e2){}
   }
 
   if(typeof google!=='undefined'){
