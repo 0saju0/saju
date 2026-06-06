@@ -611,7 +611,11 @@ function computeSaju(){
       const genderForDaewoon=state.gender==='기타'?(state.daewoonBase==='양'?'남':'여'):state.gender;
       const yun=ec.getYun(genderForDaewoon==='남'?1:0);
       const arr=yun.getDaYun();
-      for(let i=1;i<arr.length&&i<=9;i++){daewoon.push({age:arr[i].getStartAge(),year:arr[i].getStartYear(),gz:arr[i].getGanZhi()});}
+      for(let i=0;i<arr.length&&daewoon.length<10;i++){
+        const gz=arr[i].getGanZhi();
+        if(!gz||gz.length<2)continue; // 출생~첫대운 전 빈 구간은 건너뜀
+        daewoon.push({age:arr[i].getStartAge(),year:arr[i].getStartYear(),gz});
+      }
     }catch(e){}
     const nowY=new Date().getFullYear();
     const saewoon=[];
@@ -685,8 +689,19 @@ function buildContext(s){
   const now=new Date();
   const currentYear=now.getFullYear();
   const currentMonth=now.getMonth()+1;
+  const currentDay=now.getDate();
   let age=currentYear-state.year;
-  if(state.month&&currentMonth<state.month)age--;
+  if(state.month&&(currentMonth<state.month||(currentMonth===state.month&&state.day&&currentDay<state.day)))age--;
+  // 현재 나이가 속한 대운을 직접 찾아서 명시 (AI가 직접 계산하다 틀리는 것 방지)
+  let curDw='정보 없음';
+  if(s.daewoon.length){
+    let found=null;
+    for(let i=s.daewoon.length-1;i>=0;i--){
+      if(age>=s.daewoon[i].age){found=s.daewoon[i];break;}
+    }
+    if(!found)found=s.daewoon[0];
+    curDw=`${found.age}세부터 시작된 ${found.gz}(${GAN_KR[found.gz[0]]}${ZHI_KR[found.gz[1]]}) 대운`;
+  }
   return `[상담자] ${state.name}, ${state.gender}성, ${state.year}년 ${state.month}월 ${state.day}일생(${state.cal}력)${s.hasTime?'':' (출생시 미상)'}
 [현재 시점] ${currentYear}년 ${currentMonth}월 / 상담자 현재 만 ${age}세
 [사주팔자]\n${pdesc}
@@ -694,6 +709,7 @@ function buildContext(s){
 [오행 분포] ${oc}
 [신살] ${sinsalStr}
 [대운 흐름] ${dwStr}
+[★현재 대운★] ${curDw} — 반드시 이 대운을 현재 대운으로 사용할 것. 다른 나이로 계산하지 말 것.
 [향후 세운] ${swStr}`;
 }
 
@@ -708,7 +724,7 @@ ${ctx}
 
 [반드시 지킬 규칙]
 1. 호칭: 반드시 "${nm}님"만 사용. "님" 단독, "당신", "그분" 절대 금지.
-2. 현재 시점: [현재 시점]에 명시된 연도·나이만 사용. 절대 다른 연도 금지.
+2. 현재 시점: [현재 시점]에 명시된 연도·나이만 사용. 절대 다른 연도 금지. 현재 대운을 언급할 때는 반드시 [★현재 대운★]에 적힌 나이·간지를 그대로 사용. 직접 나이를 계산하지 말 것.
 3. 현재/과거 단정 금지: "~했을 것입니다", "~이었을 것입니다" 식으로 가능성으로 표현. 확인되지 않은 과거 경험을 단정하지 말 것.
 4. 쉬운 말 필수: 편인·편재·겁재·상관·식신·정관·편관·칠살·비견 등 명리 한자어 단독 사용 절대 금지. 반드시 풀어서 표현.
 5. 톤: "~한 경향이 있습니다", "~처럼 느껴질 수 있습니다" 식으로 부드럽게.
