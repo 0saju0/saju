@@ -836,51 +836,35 @@ ${ctx}
   outro.textContent='― 月下 月下緣 ―';
   body.appendChild(outro);
 
-  // 섹션을 절반씩 2개 병렬 요청 (타임아웃 방지)
-  const mid=Math.ceil(secs.length/2);
-  const secsA=secs.slice(0,mid);
-  const secsB=secs.slice(mid);
-
-  const makePrompt=(secList,offset)=>{
-    const list=secList.map((sec,i)=>`<<<SECTION_${offset+i+1}>>>\n${sec.icon} ${sec.title}\n${sec.ask}`).join('\n\n');
-    return common+`\n\n아래 ${secList.length}개 항목을 풀이하세요. 각 항목은 반드시 <<<SECTION_번호>>> 태그로 시작하세요.\n절대 # ## 같은 마크다운 헤더 사용 금지. HTML 태그만 사용.\n\n${list}`;
-  };
-
-  const [rawA,rawB]=await Promise.all([
-    fetchAI(makePrompt(secsA,0),2),
-    fetchAI(makePrompt(secsB,mid),2)
-  ]);
-  const raw=(rawA||'')+'\n'+(rawB||'');
-
-  // 파싱
+  // 2개씩 묶어서 안정적으로 요청
   let allFilled=true;
-  const parts=raw.split(/<<<SECTION_(\d+)>>>/);
-  for(let p=1;p<parts.length;p+=2){
-    const idx=parseInt(parts[p])-1;
-    const content=(parts[p+1]||'').trim()
-      .replace(/```html|```/g,'')
-      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-      .replace(/^#+\s+(.+)$/gm,'<h4>$1</h4>') // # 헤더 → h4로 변환
-      .trim();
-    if(idx>=0&&idx<blocks.length&&content&&content.length>50){
-      blocks[idx].innerHTML=`<h3>${secs[idx].icon} ${secs[idx].title}</h3>${content}`;
-    }
+  const BATCH=2;
+  for(let b=0;b<secs.length;b+=BATCH){
+    const batch=secs.slice(b,b+BATCH);
+    await Promise.all(batch.map(async(sec,j)=>{
+      const i=b+j;
+      await sleep(j*300);
+      const secPrompt=common+`\n\n[이번 항목] ${sec.icon} ${sec.title}\n${sec.ask}\n\n절대 # ## 마크다운 헤더 사용 금지. <p><h4><strong><table><div class="quote"> 태그만 사용.`;
+      let txt=await fetchAI(secPrompt,2);
+      if(txt){
+        txt=txt.replace(/```html|```/g,'')
+               .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+               .replace(/^#+\s+(.+)$/gm,'<h4>$1</h4>')
+               .trim();
+        blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>${txt}`;
+      }else{
+        allFilled=false;
+        blocks[i].innerHTML=`<h3>${sec.icon} ${sec.title}</h3>
+          <div style="text-align:center;padding:16px 0">
+            <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
+            <button onclick="retrySection(this,'${sec.icon}','${sec.title.replace(/'/g,"\\'")}',${i})"
+              style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:3px;cursor:pointer;font-size:13px">
+              🔄 다시 불러오기
+            </button>
+          </div>`;
+      }
+    }));
   }
-
-  // 실패한 섹션 처리
-  blocks.forEach((block,i)=>{
-    if(block.querySelector('.sec-load')){
-      allFilled=false;
-      block.innerHTML=`<h3>${secs[i].icon} ${secs[i].title}</h3>
-        <div style="text-align:center;padding:16px 0">
-          <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
-          <button onclick="retrySection(this,'${secs[i].icon}','${secs[i].title.replace(/'/g,"\\'")}',${i})"
-            style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:3px;cursor:pointer;font-size:13px">
-            🔄 다시 불러오기
-          </button>
-        </div>`;
-    }
-  });
 
   // 완료 후 sessionStorage(새로고침) + localStorage(로그인저장) 둘 다 저장
   lastResultHTML=body.innerHTML;
