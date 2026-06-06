@@ -6,6 +6,7 @@
 <title>월하연(月下緣) — AI 사주</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -230,7 +231,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
     <div id="g-signin-area">
       <div id="g_id_onload" data-client_id="25345900699-269nfjsmcr7a22fh67f9p330uaj8nqhk.apps.googleusercontent.com" data-callback="onGoogleLogin" data-auto_prompt="false"></div>
       <div class="g_id_signin" data-type="standard" data-size="small" data-theme="outline" data-text="sign_in_with" data-shape="pill" data-logo_alignment="left" style="display:none" id="g-btn-wrap"></div>
-      <button class="top-btn" onclick="triggerGLogin()">🔐 로그인</button>
+      <button class="top-btn" onclick="triggerGLogin()">🔐 구글 로그인</button>
+      <button class="top-btn" onclick="triggerKakaoLogin()" style="background:#FEE500;border-color:#FEE500;color:#3C1E1E">💬 카카오</button>
     </div>
     <div id="g-user-area" style="display:none">
       <span class="top-mypage" onclick="goTo('pgMy')">내 풀이</span>
@@ -1130,7 +1132,47 @@ function submitReview(){
 /* ════ 구글 로그인 ════ */
 // ⚠️ 아래 YOUR_GOOGLE_CLIENT_ID를 Google Cloud Console에서 발급받은 Client ID로 교체하세요
 const GOOGLE_CLIENT_ID='25345900699-269nfjsmcr7a22fh67f9p330uaj8nqhk.apps.googleusercontent.com';
+const KAKAO_JS_KEY='5a5a14930018a6fa931764d78ed2fd50';
 let gUser=null;
+
+function triggerKakaoLogin(){
+  // 현재 풀이 sessionStorage에 저장
+  const aiBody=document.getElementById('ai-body');
+  const htmlContent=aiBody&&aiBody.innerHTML.trim()?aiBody.innerHTML:lastResultHTML;
+  if(htmlContent){
+    try{
+      sessionStorage.setItem('saju_temp_html',htmlContent);
+      sessionStorage.setItem('saju_temp_meta',JSON.stringify({
+        name:state.name||'',type:state.readingType||'',pkg:state.pkg?.name||'',
+        date:new Date().toLocaleDateString('ko-KR'),
+        info:document.getElementById('r-info')?.textContent||''
+      }));
+    }catch(e){}
+  }
+  if(typeof Kakao==='undefined'){alert('카카오 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;}
+  if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);
+  Kakao.Auth.login({
+    success(auth){
+      Kakao.API.request({
+        url:'/v2/user/me',
+        success(res){
+          const profile=res.kakao_account?.profile||{};
+          gUser={
+            sub:'kakao_'+res.id,
+            name:profile.nickname||'카카오유저',
+            email:res.kakao_account?.email||'',
+            picture:profile.profile_image_url||''
+          };
+          try{localStorage.setItem('saju_guser',JSON.stringify(gUser));}catch(e){}
+          updateLoginUI();
+          restoreAndSave();
+        },
+        fail(e){alert('카카오 정보 불러오기 실패');}
+      });
+    },
+    fail(e){alert('카카오 로그인 실패: '+e.error_description);}
+  });
+}
 function triggerGLogin(){
   if(typeof google==='undefined'){
     alert('Google 로그인 모듈 로딩 중입니다. 잠시 후 다시 눌러주세요.');return;
@@ -1387,9 +1429,12 @@ window.addEventListener('load',()=>{
     if(target==='pg1') restoreInputForm();
   }
 
-  // ③ Google 초기화
+  // ③ Google + 카카오 초기화
   if(typeof google!=='undefined'){
     try{google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});}catch(e){}
+  }
+  if(typeof Kakao!=='undefined'&&!Kakao.isInitialized()){
+    try{Kakao.init(KAKAO_JS_KEY);}catch(e){}
   }
 
   // ④ sessionStorage 복원 대기 (로그인 후 돌아온 경우)
