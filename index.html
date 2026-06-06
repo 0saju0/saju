@@ -243,7 +243,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("d
 </div>
 
 <!-- LANDING -->
-<div class="page active" id="pg0"><div class="container">
+<div class="page" id="pg0"><div class="container">
   <div class="hero">
     <div class="hero-moon">🌙</div>
     <div class="hero-badge">AI 사주 풀이</div>
@@ -1302,26 +1302,28 @@ async function retrySection(btn,icon,title,idx){
 window.addEventListener('load',()=>{
   LUNAR_OK=(typeof Solar!=='undefined');
   renderReviews();
-  document.querySelectorAll('#star-pick span').forEach(s=>{s.addEventListener('click',()=>{pickedStar=parseInt(s.dataset.v);paintStars();});});
+  document.querySelectorAll('#star-pick span').forEach(s=>{
+    s.addEventListener('click',()=>{pickedStar=parseInt(s.dataset.v);paintStars();});
+  });
 
-  // ① 로그인 정보 복원 (localStorage)
+  // ① 로그인 복원
   try{
     const saved=localStorage.getItem('saju_guser');
-    if(saved){
-      gUser=JSON.parse(saved);
-      updateLoginUI();
-    }
+    if(saved){gUser=JSON.parse(saved);updateLoginUI();}
   }catch(e){}
 
-  // ② 페이지 복원 (sessionStorage 우선)
-  const curPage=sessionStorage.getItem('saju_cur_page')||'';
-  const validPages=['pg1','pg2','pg3','pgG','pgGpay','pgMy'];
-  if(curPage==='pg4'||sessionStorage.getItem('saju_cur_reading')){
-    restoreLastReading();
-  }else if(curPage&&validPages.includes(curPage)){
+  // ② URL 해시로 페이지 결정 (가장 단순하고 확실한 방법)
+  const hash=window.location.hash.replace('#','');
+  const allPages=['pg0','pg1','pg2','pg3','pg4','pgG','pgGpay','pgMy','pgSaved'];
+  const target=hash&&allPages.includes(hash)?hash:'pg0';
+
+  if(target==='pg4'){
+    // 결과 페이지: sessionStorage/localStorage에서 복원
+    if(!restoreLastReading()){goTo('pg0');}
+  }else{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(curPage)?.classList.add('active');
-    if(curPage==='pgMy')loadMyList();
+    document.getElementById(target).classList.add('active');
+    if(target==='pgMy')loadMyList();
   }
 
   // ③ Google 초기화
@@ -1329,11 +1331,10 @@ window.addEventListener('load',()=>{
     try{google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogleLogin});}catch(e){}
   }
 
-  // ④ 이미 로그인 상태면 sessionStorage 복원
+  // ④ sessionStorage 복원 대기 (로그인 후 돌아온 경우)
   if(sessionStorage.getItem('saju_temp_html')&&gUser){
     restoreAndSave();
   }else{
-    // 불필요한 sessionStorage 정리
     sessionStorage.removeItem('saju_temp_html');
     sessionStorage.removeItem('saju_temp_meta');
     sessionStorage.removeItem('saju_restore_page');
