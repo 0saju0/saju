@@ -836,39 +836,41 @@ ${ctx}
   outro.textContent='― 月下 月下緣 ―';
   body.appendChild(outro);
 
-  // ★ 한 번에 전체 요청 (빠름!)
-  const secList=secs.map((sec,i)=>`[${i+1}] ${sec.icon} ${sec.title}\n${sec.ask}`).join('\n\n');
-  const bigPrompt=common+`\n\n아래 ${secs.length}개 항목을 모두 풀이하세요. 각 항목은 반드시 <<<SECTION_번호>>> 로 시작하세요. 예: <<<SECTION_1>>>\n\n${secList}`;
+  // 섹션을 절반씩 2개 병렬 요청 (타임아웃 방지)
+  const mid=Math.ceil(secs.length/2);
+  const secsA=secs.slice(0,mid);
+  const secsB=secs.slice(mid);
 
-  const raw=await fetchAI(bigPrompt,2);
+  const makePrompt=(secList,offset)=>{
+    const list=secList.map((sec,i)=>`<<<SECTION_${offset+i+1}>>>\n${sec.icon} ${sec.title}\n${sec.ask}`).join('\n\n');
+    return common+`\n\n아래 ${secList.length}개 항목을 풀이하세요. 각 항목은 반드시 <<<SECTION_번호>>> 태그로 시작하세요.\n절대 # ## 같은 마크다운 헤더 사용 금지. HTML 태그만 사용.\n\n${list}`;
+  };
 
-  if(raw){
-    // 응답 파싱 - <<<SECTION_N>>> 기준으로 분리
-    const parts=raw.split(/<<<SECTION_(\d+)>>>/);
-    // parts = ['', '1', '내용1', '2', '내용2', ...]
-    for(let p=1;p<parts.length;p+=2){
-      const idx=parseInt(parts[p])-1;
-      const content=(parts[p+1]||'').trim();
-      if(idx>=0&&idx<blocks.length&&content){
-        blocks[idx].innerHTML=`<h3>${secs[idx].icon} ${secs[idx].title}</h3>${content}`;
-      }
+  const [rawA,rawB]=await Promise.all([
+    fetchAI(makePrompt(secsA,0),2),
+    fetchAI(makePrompt(secsB,mid),2)
+  ]);
+  const raw=(rawA||'')+'\n'+(rawB||'');
+
+  // 파싱
+  let allFilled=true;
+  const parts=raw.split(/<<<SECTION_(\d+)>>>/);
+  for(let p=1;p<parts.length;p+=2){
+    const idx=parseInt(parts[p])-1;
+    const content=(parts[p+1]||'').trim()
+      .replace(/```html|```/g,'')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^#+\s+(.+)$/gm,'<h4>$1</h4>') // # 헤더 → h4로 변환
+      .trim();
+    if(idx>=0&&idx<blocks.length&&content&&content.length>50){
+      blocks[idx].innerHTML=`<h3>${secs[idx].icon} ${secs[idx].title}</h3>${content}`;
     }
-    // 파싱 안 된 섹션은 재시도 버튼
-    blocks.forEach((block,i)=>{
-      if(block.querySelector('.sec-load')){
-        block.innerHTML=`<h3>${secs[i].icon} ${secs[i].title}</h3>
-          <div style="text-align:center;padding:16px 0">
-            <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
-            <button onclick="retrySection(this,'${secs[i].icon}','${secs[i].title.replace(/'/g,"\\'")}',${i})"
-              style="background:rgba(200,164,90,.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:3px;cursor:pointer;font-size:13px">
-              🔄 다시 불러오기
-            </button>
-          </div>`;
-      }
-    });
-  }else{
-    // 전체 실패 시 모든 섹션에 재시도 버튼
-    blocks.forEach((block,i)=>{
+  }
+
+  // 실패한 섹션 처리
+  blocks.forEach((block,i)=>{
+    if(block.querySelector('.sec-load')){
+      allFilled=false;
       block.innerHTML=`<h3>${secs[i].icon} ${secs[i].title}</h3>
         <div style="text-align:center;padding:16px 0">
           <p style="color:var(--cream3);font-size:13px;margin-bottom:12px">이 항목을 불러오지 못했어요.</p>
@@ -877,8 +879,8 @@ ${ctx}
             🔄 다시 불러오기
           </button>
         </div>`;
-    });
-  }
+    }
+  });
 
   // 완료 후 sessionStorage(새로고침) + localStorage(로그인저장) 둘 다 저장
   lastResultHTML=body.innerHTML;
@@ -895,8 +897,10 @@ ${ctx}
     dmD:document.getElementById('r-dm-d')?.textContent||'',
     dmCls:document.getElementById('r-dm')?.className||'',
   };
-  // 실제 내용 있을 때만 저장 (플레이스홀더 제외)
-  if(lastResultHTML&&lastResultHTML.length>500&&lastResultMeta.name&&lastResultMeta.name.trim()){
+  // 완성된 내용만 저장 (실패 섹션 없을 때만)
+  lastResultHTML=body.innerHTML;
+  lastResultMeta={name:state.name,type:state.readingType,pkg:state.pkg.name,date:new Date().toLocaleDateString('ko-KR'),info:document.getElementById('r-info').textContent};
+  if(allFilled&&lastResultHTML&&lastResultHTML.length>500&&state.name?.trim()){
     try{sessionStorage.setItem('saju_cur_reading',JSON.stringify(saveObj));}catch(e){}
     try{localStorage.setItem('saju_last',JSON.stringify(saveObj));}catch(e){}
   }
