@@ -1226,6 +1226,26 @@ function showLogout(){
   document.getElementById('logout-info').textContent=(gUser?.name||'')+'님으로 로그인 중';
   document.getElementById('logout-modal').style.display='flex';
 }
+function restoreInputForm(){
+  try{
+    const saved=sessionStorage.getItem('saju_cur_state');
+    if(!saved)return;
+    const s=JSON.parse(saved);
+    if(!s)return;
+    if(s.name){document.getElementById('i-name').value=s.name;state.name=s.name;}
+    if(s.gender){state.gender=s.gender;document.querySelectorAll('#pg1 .seg-opt').forEach(e=>{if(['남성','여성','기타'].includes(e.textContent))e.classList.toggle('on',e.textContent===(s.gender==='기타'?'기타':s.gender+'성'));});}
+    if(s.cal){state.cal=s.cal;document.getElementById('tab-y').classList.toggle('on',s.cal==='양');document.getElementById('tab-e').classList.toggle('on',s.cal==='음');}
+    if(s.year)document.getElementById('i-year').value=s.year;
+    if(s.month)document.getElementById('i-month').value=s.month;
+    if(s.day)document.getElementById('i-day').value=s.day;
+    if(s.timeIdx!=null)document.getElementById('i-time').value=s.timeIdx;
+    if(s.relStatus){state.relStatus=s.relStatus;document.querySelectorAll('#rel-status-wrap .seg-opt').forEach(e=>e.classList.toggle('on',e.textContent.includes(s.relStatus)));}
+    if(s.readingType)state.readingType=s.readingType;
+    Object.assign(state,{year:s.year,month:s.month,day:s.day,timeIdx:s.timeIdx,daewoonBase:s.daewoonBase||'음'});
+    render();
+  }catch(e){}
+}
+
 function restoreLastReading(){
   try{
     // sessionStorage 먼저 (새로고침), 없으면 localStorage
@@ -1355,10 +1375,16 @@ window.addEventListener('load',()=>{
 
   if(target==='pg4'){
     if(!restoreLastReading()){goTo('pg0');}
+  }else if(target==='pg3'||target==='pg2'){
+    // 결제/패키지 페이지 새로고침 → pg1으로 (입력값 복원)
+    restoreInputForm();
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('pg1').classList.add('active');
   }else{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(target)?.classList.add('active');
     if(target==='pgMy')loadMyList();
+    if(target==='pg1') restoreInputForm();
   }
 
   // ③ Google 초기화
