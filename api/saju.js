@@ -6,12 +6,12 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
 
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) { res.status(500).json({ error: 'ANTHROPIC_API_KEY 환경변수가 없습니다.' }); return; }
+  if (!key) { res.status(500).json({ error: 'ANTHROPIC_API_KEY 없음' }); return; }
 
   let body = req.body;
-  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch(e) { body = {}; } }
   const prompt = body && body.prompt;
-  if (!prompt) { res.status(400).json({ error: 'prompt가 없습니다.' }); return; }
+  if (!prompt) { res.status(400).json({ error: 'prompt 없음' }); return; }
 
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -22,14 +22,14 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 4096,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 8000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const data = await r.json();
-    if (data.error) { res.status(500).json({ error: data.error.message || 'API 오류' }); return; }
+    if (data.error) { res.status(500).json({ error: data.error.message }); return; }
 
     const text = (data.content || [])
       .filter(c => c.type === 'text')
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       .join('\n');
 
     res.status(200).json({ text });
-  } catch (e) {
+  } catch(e) {
     res.status(500).json({ error: String(e && e.message ? e.message : e) });
   }
 }
